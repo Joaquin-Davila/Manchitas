@@ -65,3 +65,14 @@ Metas del piloto: 100 perros registrados, 2 comercios aliados, 1 reunión con el
 - Datos de ejemplo realistas, sin texto de relleno tipo "lorem ipsum".
 - Haz cambios pequeños y explícalos. Antes de borrar archivos o cambiar la estructura, pregunta.
 - No guardes claves ni secretos en el repositorio: usa variables de entorno (`.env`, fuera de git).
+
+## Decisiones tomadas
+- **Folio aleatorio** (ej. `MCH-7K3P9Q`), no consecutivo. El QR apunta a un token largo distinto.
+- **Registro solo de perros**, con campo `especie` para sumar gatos después. Adopción sí muestra perros y gatos.
+- **Reporte ciudadano sin cuenta**, con folio de seguimiento y límite de envíos.
+- **Autoridad:** panel sencillo de solo lectura, como último paso.
+- **Barra inferior:** Mascotas, Comunidad (Campañas y Adopción), Inicio, Salud, Avisos. El encabezado de la pestaña Avisos dice "Reportes".
+- **Mapa:** Leaflet con OpenStreetMap.
+- **Cartilla:** mostrar solo vacunas aplicadas y la próxima pendiente. Sin "4/5" ni "Al día" hasta que un veterinario valide el esquema.
+- **Supabase:** se empieza sin proyecto, con datos de ejemplo; se conecta después.
+- **Inicio de sesión:** correo y contraseña.
