@@ -4,6 +4,8 @@ export type Sesion = {
   nombre: string
   apellido: string
   correo: string
+  /** 10 dígitos de WhatsApp; las cuentas anteriores a este campo no lo tienen. */
+  telefono?: string
 }
 
 export type ValorSesion = {

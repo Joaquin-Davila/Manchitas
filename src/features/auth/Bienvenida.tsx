@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import BotonPrincipal from '../../components/ui/BotonPrincipal'
 import BotonSecundario from '../../components/ui/BotonSecundario'
 import Huella from '../../components/ui/Huella'
@@ -23,6 +24,12 @@ export default function Bienvenida() {
         <div className="mt-auto flex w-full flex-col gap-4">
           <BotonPrincipal to="/iniciar-sesion">Iniciar sesión</BotonPrincipal>
           <BotonSecundario to="/registro">Regístrate</BotonSecundario>
+          <Link
+            to="/buscar"
+            className="flex min-h-11 items-center justify-center text-sm font-semibold text-naranja-sombra underline"
+          >
+            Tengo el ID de un collar
+          </Link>
         </div>
       </div>
     </main>

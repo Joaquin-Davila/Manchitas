@@ -132,7 +132,7 @@ export default function NuevaMascota() {
           nota: valores.nota.trim(),
           fotoUrl: foto,
         },
-        sesion.correo,
+        sesion,
       )
       navigate(`/mascotas/${mascota.id}`, { replace: true, state: { nueva: true } })
     } catch (error) {

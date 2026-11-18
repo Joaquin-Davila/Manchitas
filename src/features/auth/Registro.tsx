@@ -78,6 +78,7 @@ export default function Registro() {
       nombre: valores.nombre.trim(),
       apellido: valores.apellido.trim(),
       correo: valores.correo.trim(),
+      telefono: valores.telefono.replace(/[\s-]/g, ''),
     })
     navigate('/', { replace: true })
   }

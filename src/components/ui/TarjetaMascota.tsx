@@ -2,7 +2,7 @@ import Huella from './Huella'
 import Tarjeta from './Tarjeta'
 import type { Mascota } from '../../types/mascota'
 
-type Props = Pick<Mascota, 'nombre' | 'folio' | 'fotoUrl'>
+type Props = Pick<Mascota, 'nombre' | 'fotoUrl'> & { folio?: string }
 
 export default function TarjetaMascota({ nombre, folio, fotoUrl }: Props) {
   return (
@@ -20,7 +20,7 @@ export default function TarjetaMascota({ nombre, folio, fotoUrl }: Props) {
       )}
       <div className="flex items-center justify-between bg-franja px-4 py-3 text-franja-texto">
         <p className="font-titulo text-[22px] font-bold text-cafe">{nombre}</p>
-        <p className="text-sm">Folio {folio}</p>
+        {folio && <p className="text-sm">Folio {folio}</p>}
       </div>
     </Tarjeta>
   )

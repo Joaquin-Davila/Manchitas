@@ -17,6 +17,18 @@ export type Mascota = {
   token: string
   creadaEn: string
   tutorCorreo: string
+  /** Copia del apellido del tutor (en Supabase vendrá de su perfil). */
+  tutorApellido?: string
+  /** Copia del WhatsApp del tutor. Nunca se muestra en pantalla. */
+  tutorTelefono?: string
+}
+
+/** Lo único que ve quien escanea el QR o escribe el ID exacto. */
+export type PerfilPublico = Pick<Mascota, 'nombre' | 'raza' | 'nacimiento' | 'senas' | 'nota' | 'fotoUrl'> & {
+  /** Un solo apellido del tutor, como máximo. */
+  apellidoTutor?: string
+  /** Enlace de WhatsApp ya armado; null si el tutor no tiene contacto registrado. */
+  enlaceWhatsApp: string | null
 }
 
 export type DatosMascota = Pick<
