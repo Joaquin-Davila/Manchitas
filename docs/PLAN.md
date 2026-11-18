@@ -19,8 +19,8 @@ Estados: ✅ hecho · ⏳ siguiente · ⬜ pendiente.
 |---|---|---|
 | 4 | Registro de la mascota: folio aleatorio (`MCH-XXXXXX`), QR con token largo y etiqueta imprimible. Datos en `localStorage` mediante `src/lib/mascotas.ts` (se cambia por Supabase en el paso 10) | ✅ |
 | 5 | Perfil público del QR (`/m/:token`): búsqueda por ID exacto, ficha mínima y botón de WhatsApp (sin barra inferior, sin "perdido", sin teléfono en pantalla) | ✅ |
-| 6 | Cartilla digital (solo vacunas aplicadas y la próxima pendiente) y subida de foto de la cartilla; billetera de cupones con datos de ejemplo | ⏳ |
-| 7 | Reporte ciudadano en 4 pasos, sin cuenta, con folio de seguimiento y límite de envíos; acceso al Reglamento | ⬜ |
+| 6 | Cartilla digital (solo vacunas aplicadas y la próxima pendiente) y subida de foto de la cartilla; billetera de cupones con datos de ejemplo | ✅ |
+| 7 | Reporte ciudadano en 4 pasos, sin cuenta, con folio de seguimiento y límite de envíos; acceso al Reglamento | ⏳ |
 
 ## Prioridad media
 

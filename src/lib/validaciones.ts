@@ -74,6 +74,57 @@ export function validarFechaNacimiento(valor: string, hoy = new Date()): string 
   return null
 }
 
+// --- Cartilla ---
+
+function fechaExiste(valor: string): boolean {
+  const c = /^(\d{4})-(\d{2})-(\d{2})$/.exec(valor)
+  if (!c) return false
+  const [anio, mes, dia] = [Number(c[1]), Number(c[2]), Number(c[3])]
+  const f = new Date(Date.UTC(anio, mes - 1, dia))
+  return f.getUTCFullYear() === anio && f.getUTCMonth() === mes - 1 && f.getUTCDate() === dia
+}
+
+export function validarVacuna(valor: string): string | null {
+  return valor ? null : 'Elige la vacuna.'
+}
+
+export function validarOtraVacuna(valor: string): string | null {
+  const texto = valor.trim()
+  if (!texto) return 'Escribe el nombre de la vacuna.'
+  if (!/^[\p{L}\p{N}][\p{L}\p{N}\s'.()/-]*$/u.test(texto) || texto.length > 60) {
+    return 'Usa solo letras y números (máximo 60).'
+  }
+  return null
+}
+
+/** Fecha de aplicación: real, no futura y no anterior al nacimiento ("AAAA" o "AAAA-MM-DD"). */
+export function validarFechaVacuna(valor: string, nacimiento: string, hoy = new Date()): string | null {
+  if (!valor) return 'Elige la fecha en que se aplicó.'
+  if (!fechaExiste(valor)) return 'Esa fecha no existe.'
+  if (valor > hoyISO(hoy)) return 'La fecha no puede ser futura.'
+  const antes = nacimiento.length === 4 ? valor.slice(0, 4) < nacimiento : valor < nacimiento
+  if (antes) return 'La fecha es anterior al nacimiento de tu perro.'
+  return null
+}
+
+/** Próxima dosis: opcional; si se escribe, debe ser real, de hoy en adelante y posterior a la aplicada. */
+export function validarFechaProxima(valor: string, aplicada: string, hoy = new Date()): string | null {
+  if (!valor) return null
+  if (!fechaExiste(valor)) return 'Esa fecha no existe.'
+  if (valor < hoyISO(hoy)) return 'La próxima dosis debe ser de hoy en adelante.'
+  if (aplicada && valor <= aplicada) return 'Debe ser posterior a la fecha de aplicación.'
+  return null
+}
+
+export function validarVeterinaria(valor: string): string | null {
+  const texto = valor.trim()
+  if (!texto) return null
+  if (!/^[\p{L}\p{N}][\p{L}\p{N}\s'.,&-]*$/u.test(texto) || texto.length > 80) {
+    return 'Usa solo letras y números (máximo 80).'
+  }
+  return null
+}
+
 /**
  * Texto que verá cualquier persona al escanear el QR (señas y nota). Es opcional, pero no puede
  * traer un teléfono: 8 o más dígitos (aunque vayan separados por espacios o guiones).

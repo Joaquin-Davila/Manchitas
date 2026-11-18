@@ -1,4 +1,5 @@
 import { Clock, Plus } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import BotonPrincipal from '../../components/ui/BotonPrincipal'
 import Huella from '../../components/ui/Huella'
@@ -6,14 +7,24 @@ import Tarjeta from '../../components/ui/Tarjeta'
 import TarjetaAviso from '../../components/ui/TarjetaAviso'
 import TarjetaDato from '../../components/ui/TarjetaDato'
 import TarjetaMascota from '../../components/ui/TarjetaMascota'
-import { proximaCampana, proximoRecordatorio, resumen, tutor } from '../../lib/datosEjemplo'
+import { cuponesVigentes } from '../../lib/cuponesEjemplo'
+import { estadoMascota, proximaCampana, tutor } from '../../lib/datosEjemplo'
+import { hoyISO } from '../../lib/edad'
+import { formatearFecha } from '../../lib/fechas'
 import { useSesion } from '../auth/contextoSesion'
+import { useCartilla } from '../salud/useCartilla'
 import { useMascotas } from './useMascotas'
+
+const enlaceAviso =
+  'block rounded-tarjeta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-naranja'
 
 export default function Inicio() {
   const { sesion } = useSesion()
   const { mascotas, cargando } = useMascotas()
   const mascota = mascotas[0]
+  const { cartilla } = useCartilla(mascota?.id)
+  const [hoy] = useState(() => hoyISO())
+  const proxima = cartilla?.proxima
 
   const campana = (
     <TarjetaAviso
@@ -39,20 +50,34 @@ export default function Inicio() {
           </Link>
 
           <div className="grid grid-cols-4 gap-2.5">
-            <TarjetaDato etiqueta="Vacunas" valor={resumen.vacunasAplicadas} color="rosa" />
-            <TarjetaDato etiqueta="Pendiente" valor={resumen.pendientes} color="durazno" />
-            <TarjetaDato etiqueta="Cupones" valor={resumen.cupones} color="lima" />
-            <TarjetaDato etiqueta="Estado" valor={resumen.estado} color="celeste" />
+            <TarjetaDato etiqueta="Vacunas" valor={cartilla?.vacunas.length ?? 0} color="rosa" />
+            <TarjetaDato etiqueta="Pendiente" valor={proxima ? 1 : 0} color="durazno" />
+            <TarjetaDato etiqueta="Cupones" valor={cuponesVigentes(hoy).length} color="lima" />
+            <TarjetaDato etiqueta="Estado" valor={estadoMascota} color="celeste" />
           </div>
 
-          <TarjetaAviso
-            icono={<Clock aria-hidden="true" size={26} />}
-            colorIcono="bg-aviso-fondo text-naranja"
-            {...proximoRecordatorio}
-          />
+          {proxima && cartilla?.recordatorio ? (
+            <Link to="/salud" className={enlaceAviso}>
+              <TarjetaAviso
+                icono={<Clock aria-hidden="true" size={26} />}
+                colorIcono="bg-aviso-fondo text-naranja"
+                titulo="Próximo recordatorio"
+                detalle={`${proxima.nombre} · ${formatearFecha(proxima.fecha, proxima.fecha.slice(0, 4) !== hoy.slice(0, 4))}${proxima.fecha < hoy ? ' · ya pasó' : ''}`}
+              />
+            </Link>
+          ) : !proxima ? (
+            <Link to="/salud" className={enlaceAviso}>
+              <TarjetaAviso
+                icono={<Clock aria-hidden="true" size={26} />}
+                colorIcono="bg-aviso-fondo text-naranja"
+                titulo="Sin recordatorios"
+                detalle="Programa la próxima vacuna en Salud"
+              />
+            </Link>
+          ) : null}
           {campana}
 
-          <BotonPrincipal to="/salud" className="mt-1">
+          <BotonPrincipal to="/salud?tab=cupones" className="mt-1">
             Ver cupones y beneficios
           </BotonPrincipal>
         </>
