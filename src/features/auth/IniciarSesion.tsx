@@ -1,0 +1,70 @@
+import { Link, useNavigate } from 'react-router-dom'
+import type { FormEvent } from 'react'
+import BotonPrincipal from '../../components/ui/BotonPrincipal'
+import CampoTexto from '../../components/ui/CampoTexto'
+import EncabezadoCurvo from '../../components/ui/EncabezadoCurvo'
+import { validarContrasenaActual, validarCorreo } from '../../lib/validaciones'
+import CampoContrasena from './CampoContrasena'
+import { useSesion } from './contextoSesion'
+import { useCampos } from './useCampos'
+import type { Reglas } from './useCampos'
+
+type Valores = { correo: string; contrasena: string }
+
+const reglas: Reglas<Valores> = {
+  correo: validarCorreo,
+  contrasena: validarContrasenaActual,
+}
+
+export default function IniciarSesion() {
+  const { iniciarSesion } = useSesion()
+  const navigate = useNavigate()
+  const { valores, campo, validar } = useCampos<Valores>({ correo: '', contrasena: '' }, reglas)
+
+  function enviar(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const primero = validar(['correo', 'contrasena'])
+    if (primero) {
+      ;(e.currentTarget.elements.namedItem(primero) as HTMLElement | null)?.focus()
+      return
+    }
+    iniciarSesion(valores.correo.trim())
+    navigate('/', { replace: true })
+  }
+
+  return (
+    <>
+      <EncabezadoCurvo titulo="Iniciar sesión" atras="/bienvenida" />
+      <main className="px-5 pb-10 pt-8">
+        <form noValidate onSubmit={enviar} aria-label="Iniciar sesión" className="flex flex-col gap-6">
+          <CampoTexto
+            label="Correo electrónico"
+            type="email"
+            autoComplete="username"
+            inputMode="email"
+            enterKeyHint="next"
+            spellCheck={false}
+            required
+            {...campo('correo')}
+          />
+          <CampoContrasena
+            label="Contraseña"
+            autoComplete="current-password"
+            enterKeyHint="done"
+            required
+            {...campo('contrasena')}
+          />
+          <BotonPrincipal type="submit" className="mt-2">
+            Iniciar sesión
+          </BotonPrincipal>
+        </form>
+        <p className="mt-6 text-center text-sm text-cafe-suave">
+          ¿Aún no tienes cuenta?{' '}
+          <Link to="/registro" className="font-semibold text-naranja-sombra underline">
+            Regístrate
+          </Link>
+        </p>
+      </main>
+    </>
+  )
+}

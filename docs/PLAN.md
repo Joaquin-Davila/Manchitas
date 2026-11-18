@@ -11,13 +11,13 @@ Estados: ✅ hecho · ⏳ siguiente · ⬜ pendiente.
 |---|---|---|
 | 1 | Andamiaje: Vite, React, TypeScript, Tailwind y PWA | ✅ |
 | 2 | Componentes base (Encabezado, BarraInferior, Tarjeta, TarjetaDato, BotonPrincipal) y pantalla de Inicio con datos de ejemplo | ✅ |
+| 3 | Bienvenida, inicio de sesión (correo y contraseña) y registro por pasos, con aviso de privacidad visible. Sesión simulada (sin Supabase) y aviso de privacidad en borrador pendiente de revisión legal | ✅ |
 
 ## Prioridad alta (funcional de punta a punta)
 
 | Paso | Qué | Estado |
 |---|---|---|
-| 3 | Bienvenida, inicio de sesión (correo y contraseña) y registro por pasos, con aviso de privacidad visible | ⏳ |
-| 4 | Registro de la mascota: folio aleatorio (`MCH-XXXXXX`), QR con token largo y etiqueta imprimible | ⬜ |
+| 4 | Registro de la mascota: folio aleatorio (`MCH-XXXXXX`), QR con token largo y etiqueta imprimible | ⏳ |
 | 5 | Perfil público del QR: búsqueda por ID exacto, ficha mínima y botón de WhatsApp (sin barra inferior, sin "perdido", sin teléfono en pantalla) | ⬜ |
 | 6 | Cartilla digital (solo vacunas aplicadas y la próxima pendiente) y subida de foto de la cartilla; billetera de cupones con datos de ejemplo | ⬜ |
 | 7 | Reporte ciudadano en 4 pasos, sin cuenta, con folio de seguimiento y límite de envíos; acceso al Reglamento | ⬜ |

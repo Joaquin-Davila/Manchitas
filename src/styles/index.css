@@ -32,6 +32,8 @@
   --color-marca-celeste: #38bdf8;
   --color-marca-turquesa: #0d9488;
   --color-coral: #ef4444;
+  /* Texto de error en formularios: coral no llega a 4.5:1 sobre crema */
+  --color-error: #b91c1c;
 
   --font-sans: "Inter Variable", system-ui, sans-serif;
   --font-titulo: "Poppins", "Inter Variable", system-ui, sans-serif;

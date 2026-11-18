@@ -3,6 +3,7 @@ import BotonPrincipal from '../../components/ui/BotonPrincipal'
 import TarjetaAviso from '../../components/ui/TarjetaAviso'
 import TarjetaDato from '../../components/ui/TarjetaDato'
 import TarjetaMascota from '../../components/ui/TarjetaMascota'
+import { useSesion } from '../auth/contextoSesion'
 import {
   mascota,
   proximaCampana,
@@ -12,9 +13,11 @@ import {
 } from '../../lib/datosEjemplo'
 
 export default function Inicio() {
+  const { sesion } = useSesion()
+
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="-mb-2.5 font-titulo text-lg font-semibold">¡Hola, {tutor.nombre}!</h2>
+      <h2 className="-mb-2.5 font-titulo text-lg font-semibold">¡Hola, {sesion?.nombre ?? tutor.nombre}!</h2>
 
       <TarjetaMascota {...mascota} />
 
