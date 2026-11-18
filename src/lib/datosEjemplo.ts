@@ -1,16 +1,13 @@
-import type { Aviso, Mascota, ResumenMascota } from '../types/inicio'
+import type { Aviso, ResumenMascota } from '../types/inicio'
 
 // Datos de ejemplo mientras no hay proyecto de Supabase.
 export const tutor = { nombre: 'Joaquín' }
 
-export const mascota: Mascota = {
-  nombre: 'Luna',
-  folio: 'MCH-02841',
-}
-
+// Vacunas y pendientes empiezan en 0 hasta que exista la cartilla (paso 6).
+// Los cupones son de ejemplo.
 export const resumen: ResumenMascota = {
-  vacunasAplicadas: 4,
-  pendientes: 1,
+  vacunasAplicadas: 0,
+  pendientes: 0,
   cupones: 2,
   estado: 'Registrada',
 }

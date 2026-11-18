@@ -49,6 +49,11 @@
   --shadow-barra: 0 4px 0 #ebd9ae;
 }
 
+/* Margen al imprimir (la etiqueta del collar). */
+@page {
+  margin: 10mm;
+}
+
 @layer base {
   html {
     background-color: var(--color-crema);

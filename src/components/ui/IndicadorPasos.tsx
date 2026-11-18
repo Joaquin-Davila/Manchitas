@@ -4,11 +4,13 @@ type Props = {
   pasos: string[]
   /** Paso actual, empezando en 1. */
   actual: number
+  /** Nombre accesible del indicador. */
+  etiqueta?: string
 }
 
-export default function IndicadorPasos({ pasos, actual }: Props) {
+export default function IndicadorPasos({ pasos, actual, etiqueta = 'Progreso del registro' }: Props) {
   return (
-    <nav aria-label="Progreso del registro">
+    <nav aria-label={etiqueta}>
       <ol className="m-0 flex list-none p-0">
         {pasos.map((nombre, i) => {
           const numero = i + 1

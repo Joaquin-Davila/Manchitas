@@ -45,7 +45,8 @@ export function useCampos<T extends Record<string, string>>(inicial: T, reglas: 
       name: nombre,
       value: valores[nombre],
       error: errores[nombre],
-      onChange: (e: ChangeEvent<HTMLInputElement>) => cambiar(nombre, e.target.value),
+      onChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+        cambiar(nombre, e.target.value),
       onBlur: () => salir(nombre),
     }
   }

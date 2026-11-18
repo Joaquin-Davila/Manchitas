@@ -5,10 +5,16 @@ import LayoutAuth from '../features/auth/LayoutAuth'
 import Privacidad from '../features/auth/Privacidad'
 import Registro from '../features/auth/Registro'
 import RutaProtegida from '../features/auth/RutaProtegida'
+import FichaMascota from '../features/mascotas/FichaMascota'
 import Inicio from '../features/mascotas/Inicio'
+import ListaMascotas from '../features/mascotas/ListaMascotas'
+import NuevaMascota from '../features/mascotas/NuevaMascota'
 import Layout from './Layout'
 import PantallaVacia from './PantallaVacia'
 import { rutas } from './rutas'
+
+// Pantallas que aún no existen: solo muestran el encabezado correcto.
+const pendientes = rutas.filter((r) => r.path !== '/' && r.path !== '/mascotas')
 
 export default function App() {
   return (
@@ -23,11 +29,12 @@ export default function App() {
       <Route element={<RutaProtegida />}>
         <Route element={<Layout />}>
           <Route index element={<Inicio />} />
-          {rutas
-            .filter((r) => r.path !== '/')
-            .map((r) => (
-              <Route key={r.path} path={r.path} element={<PantallaVacia />} />
-            ))}
+          <Route path="mascotas" element={<ListaMascotas />} />
+          <Route path="mascotas/nueva" element={<NuevaMascota />} />
+          <Route path="mascotas/:id" element={<FichaMascota />} />
+          {pendientes.map((r) => (
+            <Route key={r.path} path={r.path} element={<PantallaVacia />} />
+          ))}
         </Route>
       </Route>
     </Routes>

@@ -1,8 +1,10 @@
 import Huella from './Huella'
 import Tarjeta from './Tarjeta'
-import type { Mascota } from '../../types/inicio'
+import type { Mascota } from '../../types/mascota'
 
-export default function TarjetaMascota({ nombre, folio, fotoUrl }: Mascota) {
+type Props = Pick<Mascota, 'nombre' | 'folio' | 'fotoUrl'>
+
+export default function TarjetaMascota({ nombre, folio, fotoUrl }: Props) {
   return (
     <Tarjeta className="overflow-hidden">
       {fotoUrl ? (
