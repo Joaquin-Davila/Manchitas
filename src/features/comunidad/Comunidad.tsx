@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router-dom'
 import Pestanas from '../../components/ui/Pestanas'
-import Tarjeta from '../../components/ui/Tarjeta'
+import PanelAdopcion from './PanelAdopcion'
 import PanelCampanas from './PanelCampanas'
 
 const PESTANAS = [
@@ -22,13 +22,7 @@ export default function Comunidad() {
 
       <div id={`comunidad-panel-${activa}`} role="tabpanel" aria-labelledby={`comunidad-tab-${activa}`}>
         {activa === 'adopcion' ? (
-          // Provisional: la adopción responsable llega en el paso 9.
-          <Tarjeta className="flex flex-col gap-2 p-5 text-center">
-            <p className="font-titulo text-lg font-semibold">Adopción responsable</p>
-            <p className="text-sm text-cafe-suave">
-              Muy pronto verás aquí perros y gatos con sello “Verificado”.
-            </p>
-          </Tarjeta>
+          <PanelAdopcion />
         ) : (
           <PanelCampanas />
         )}

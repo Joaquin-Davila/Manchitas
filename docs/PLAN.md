@@ -27,13 +27,13 @@ Estados: ✅ hecho · ⏳ siguiente · ⬜ pendiente.
 | Paso | Qué | Estado |
 |---|---|---|
 | 8 | Campañas y aliados: búsqueda, filtros y mapa con Leaflet y OpenStreetMap (datos de ejemplo). Pestaña Campañas dentro de Comunidad; Leaflet carga solo en esa pantalla | ✅ |
-| 9 | Adopción responsable: filtros y tarjetas con sello "Verificado" (perros y gatos, datos de ejemplo); irá en la pestaña Adopción de Comunidad | ⏳ |
+| 9 | Adopción responsable: filtros y tarjetas con sello "Verificado" (perros y gatos, datos de ejemplo); en la pestaña Adopción de Comunidad; el sello es de ejemplo | ✅ |
 
 ## Cierre
 
 | Paso | Qué | Estado |
 |---|---|---|
-| 10 | Conectar Supabase: autenticación, Postgres con RLS y almacenamiento de fotos y cartillas; reemplazar los datos de ejemplo | ⬜ |
+| 10 | Conectar Supabase: autenticación, Postgres con RLS y almacenamiento de fotos y cartillas; reemplazar los datos de ejemplo | ⏳ |
 | 11 | Panel de autoridad de solo lectura | ⬜ |
 | 12 | Pulido: PWA sin conexión, accesibilidad (contraste 4.5:1, áreas de 44 px) y revisión de privacidad (LFPDPPP) | ⬜ |
 
