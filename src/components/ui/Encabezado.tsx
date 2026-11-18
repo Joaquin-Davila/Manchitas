@@ -1,10 +1,12 @@
-import { Settings } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 type Props = {
   titulo: string
+  /** Contenido a la derecha del título (p. ej. el botón de ajustes). */
+  derecha?: ReactNode
 }
 
-export default function Encabezado({ titulo }: Props) {
+export default function Encabezado({ titulo, derecha }: Props) {
   return (
     <header className="flex items-center gap-3 rounded-b-encabezado border-b-[6px] border-amarillo-borde bg-amarillo px-5 pb-3 pt-4">
       {/* El PNG tiene márgenes blancos: se recorta a la cabeza del perro y la lupa. */}
@@ -16,13 +18,7 @@ export default function Encabezado({ titulo }: Props) {
         />
       </div>
       <h1 className="flex-1 font-titulo text-2xl font-bold text-cafe">{titulo}</h1>
-      <button
-        type="button"
-        aria-label="Ajustes"
-        className="flex size-11 items-center justify-center rounded-full bg-crema text-cafe"
-      >
-        <Settings aria-hidden="true" size={24} />
-      </button>
+      {derecha}
     </header>
   )
 }
