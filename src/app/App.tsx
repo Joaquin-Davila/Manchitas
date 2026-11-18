@@ -7,6 +7,11 @@ import Registro from '../features/auth/Registro'
 import RutaProtegida from '../features/auth/RutaProtegida'
 import BuscarPorId from '../features/publico/BuscarPorId'
 import PerfilPublico from '../features/publico/PerfilPublico'
+import CentroReportes from '../features/reportes/CentroReportes'
+import Confirmacion from '../features/reportes/Confirmacion'
+import NuevoReporte from '../features/reportes/NuevoReporte'
+import Reglamento from '../features/reportes/Reglamento'
+import Seguimiento from '../features/reportes/Seguimiento'
 import FichaMascota from '../features/mascotas/FichaMascota'
 import Inicio from '../features/mascotas/Inicio'
 import ListaMascotas from '../features/mascotas/ListaMascotas'
@@ -17,7 +22,7 @@ import PantallaVacia from './PantallaVacia'
 import { rutas } from './rutas'
 
 // Pantallas que aún no existen: solo muestran el encabezado correcto.
-const pendientes = rutas.filter((r) => r.path !== '/' && r.path !== '/mascotas' && r.path !== '/salud')
+const pendientes = rutas.filter((r) => r.path !== '/' && r.path !== '/mascotas' && r.path !== '/salud' && r.path !== '/avisos')
 
 export default function App() {
   return (
@@ -29,6 +34,10 @@ export default function App() {
         <Route path="privacidad" element={<Privacidad />} />
         <Route path="buscar" element={<BuscarPorId />} />
         <Route path="m/:token" element={<PerfilPublico />} />
+        <Route path="reportar" element={<NuevoReporte />} />
+        <Route path="reportar/enviado" element={<Confirmacion />} />
+        <Route path="reportar/seguimiento" element={<Seguimiento />} />
+        <Route path="reglamento" element={<Reglamento />} />
       </Route>
 
       <Route element={<RutaProtegida />}>
@@ -38,6 +47,7 @@ export default function App() {
           <Route path="mascotas/nueva" element={<NuevaMascota />} />
           <Route path="mascotas/:id" element={<FichaMascota />} />
           <Route path="salud" element={<Salud />} />
+          <Route path="avisos" element={<CentroReportes />} />
           {pendientes.map((r) => (
             <Route key={r.path} path={r.path} element={<PantallaVacia />} />
           ))}

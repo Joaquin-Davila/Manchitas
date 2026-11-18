@@ -125,6 +125,47 @@ export function validarVeterinaria(valor: string): string | null {
   return null
 }
 
+// --- Reporte ciudadano ---
+
+export function validarColonia(valor: string): string | null {
+  const texto = valor.trim()
+  if (!texto) return 'Escribe la colonia o el sector.'
+  if (texto.length > 80) return 'Máximo 80 caracteres.'
+  return null
+}
+
+export function validarCalle(valor: string): string | null {
+  const texto = valor.trim()
+  if (!texto) return 'Escribe la calle, el número o el cruce más cercano.'
+  if (texto.length > 120) return 'Máximo 120 caracteres.'
+  return null
+}
+
+export function validarReferencias(valor: string): string | null {
+  return valor.trim().length > 200 ? 'Máximo 200 caracteres.' : null
+}
+
+export function validarDescripcionReporte(valor: string): string | null {
+  const largo = valor.trim().length
+  if (largo < 20) return 'Cuéntanos qué viste, con al menos 20 caracteres.'
+  if (largo > 800) return 'Máximo 800 caracteres.'
+  return null
+}
+
+/** Fecha aproximada de los hechos: real, no futura y de los últimos 2 años. */
+export function validarFechaHechos(valor: string, hoy = new Date()): string | null {
+  if (!valor) return 'Elige la fecha aproximada de los hechos.'
+  if (!fechaExiste(valor)) return 'Esa fecha no existe.'
+  if (valor > hoyISO(hoy)) return 'La fecha no puede ser futura.'
+  if (Number(valor.slice(0, 4)) < hoy.getFullYear() - 2) return 'Revisa la fecha: parece muy antigua.'
+  return null
+}
+
+/** Teléfono de contacto opcional: si se escribe, debe tener los 10 dígitos. */
+export function validarTelefonoOpcional(valor: string): string | null {
+  return valor.trim() ? validarTelefono(valor) : null
+}
+
 /**
  * Texto que verá cualquier persona al escanear el QR (señas y nota). Es opcional, pero no puede
  * traer un teléfono: 8 o más dígitos (aunque vayan separados por espacios o guiones).

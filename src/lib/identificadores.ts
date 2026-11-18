@@ -8,6 +8,12 @@ export function generarFolio(): string {
   return 'MCH-' + Array.from(bytes, (b) => ALFABETO[b % 32]).join('')
 }
 
+/** Folio de seguimiento de un reporte ciudadano, p. ej. REP-4M8Q2X. Mismo alfabeto que el de collar. */
+export function generarFolioReporte(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(6))
+  return 'REP-' + Array.from(bytes, (b) => ALFABETO[b % 32]).join('')
+}
+
 /** Token largo para el QR (256 bits, base64url). No se puede adivinar ni enumerar. */
 export function generarToken(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(32))

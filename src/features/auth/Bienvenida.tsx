@@ -30,6 +30,12 @@ export default function Bienvenida() {
           >
             Tengo el ID de un collar
           </Link>
+          <Link
+            to="/reportar"
+            className="flex min-h-11 items-center justify-center text-sm font-semibold text-naranja-sombra underline"
+          >
+            Reportar un caso de maltrato
+          </Link>
         </div>
       </div>
     </main>

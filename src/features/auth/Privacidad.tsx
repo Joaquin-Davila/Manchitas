@@ -1,4 +1,5 @@
 import { CircleAlert } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
 import EncabezadoCurvo from '../../components/ui/EncabezadoCurvo'
 import Tarjeta from '../../components/ui/Tarjeta'
 
@@ -40,9 +41,12 @@ const secciones = [
 ]
 
 export default function Privacidad() {
+  // Se abre desde el registro o desde el reporte ciudadano: el botón de regreso vuelve al origen.
+  const [params] = useSearchParams()
+  const atras = params.get('desde') === 'reportar' ? '/reportar' : '/registro'
   return (
     <>
-      <EncabezadoCurvo titulo="Aviso de privacidad" atras="/registro" />
+      <EncabezadoCurvo titulo="Aviso de privacidad" atras={atras} />
       <main className="flex flex-col gap-4 px-5 pb-10 pt-6">
         <Tarjeta className="flex items-start gap-3 bg-aviso-fondo p-4 text-sm">
           <CircleAlert aria-hidden="true" size={20} className="mt-0.5 shrink-0 text-naranja-sombra" />
