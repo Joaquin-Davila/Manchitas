@@ -26,8 +26,8 @@ Estados: ✅ hecho · ⏳ siguiente · ⬜ pendiente.
 
 | Paso | Qué | Estado |
 |---|---|---|
-| 8 | Campañas y aliados: búsqueda, filtros y mapa con Leaflet y OpenStreetMap (datos de ejemplo) | ⏳ |
-| 9 | Adopción responsable: filtros y tarjetas con sello "Verificado" (perros y gatos, datos de ejemplo) | ⬜ |
+| 8 | Campañas y aliados: búsqueda, filtros y mapa con Leaflet y OpenStreetMap (datos de ejemplo). Pestaña Campañas dentro de Comunidad; Leaflet carga solo en esa pantalla | ✅ |
+| 9 | Adopción responsable: filtros y tarjetas con sello "Verificado" (perros y gatos, datos de ejemplo); irá en la pestaña Adopción de Comunidad | ⏳ |
 
 ## Cierre
 

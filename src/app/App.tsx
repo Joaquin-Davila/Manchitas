@@ -5,6 +5,7 @@ import LayoutAuth from '../features/auth/LayoutAuth'
 import Privacidad from '../features/auth/Privacidad'
 import Registro from '../features/auth/Registro'
 import RutaProtegida from '../features/auth/RutaProtegida'
+import Comunidad from '../features/comunidad/Comunidad'
 import BuscarPorId from '../features/publico/BuscarPorId'
 import PerfilPublico from '../features/publico/PerfilPublico'
 import CentroReportes from '../features/reportes/CentroReportes'
@@ -22,7 +23,7 @@ import PantallaVacia from './PantallaVacia'
 import { rutas } from './rutas'
 
 // Pantallas que aún no existen: solo muestran el encabezado correcto.
-const pendientes = rutas.filter((r) => r.path !== '/' && r.path !== '/mascotas' && r.path !== '/salud' && r.path !== '/avisos')
+const pendientes = rutas.filter((r) => r.path !== '/' && r.path !== '/mascotas' && r.path !== '/salud' && r.path !== '/avisos' && r.path !== '/comunidad')
 
 export default function App() {
   return (
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="mascotas" element={<ListaMascotas />} />
           <Route path="mascotas/nueva" element={<NuevaMascota />} />
           <Route path="mascotas/:id" element={<FichaMascota />} />
+          <Route path="comunidad" element={<Comunidad />} />
           <Route path="salud" element={<Salud />} />
           <Route path="avisos" element={<CentroReportes />} />
           {pendientes.map((r) => (

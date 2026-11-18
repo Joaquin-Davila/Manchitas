@@ -76,3 +76,5 @@ Metas del piloto: 100 perros registrados, 2 comercios aliados, 1 reunión con el
 - **Cartilla:** mostrar solo vacunas aplicadas y la próxima pendiente. Sin "4/5" ni "Al día" hasta que un veterinario valide el esquema.
 - **Supabase:** se empieza sin proyecto, con datos de ejemplo; se conecta después.
 - **Inicio de sesión:** correo y contraseña.
+- **Comunidad (`/comunidad`):** pestañas "Campañas" y "Adopción". Campañas trae búsqueda, filtros (Todos, Vacunación, Esterilización, Clínicas 24 h), mapa y dos desplegables cerrados al inicio, "Próximas campañas" y "Aliados", para no alargar la pantalla. Cada aliado lleva enlace "Cómo llegar" a OpenStreetMap, sin clave.
+- **Mapa:** Leaflet se carga solo en esa pantalla (`React.lazy`, chunk aparte de unos 45 KB con gzip). Atribución de OpenStreetMap siempre visible, marcadores SVG propios y sin scripts por CDN. Los aliados y las campañas son datos de ejemplo en `src/lib/campanasEjemplo.ts`, con coordenadas aproximadas por zona (no son ubicaciones reales). Las campañas pasadas no se listan y la tarjeta de Inicio toma la próxima de esos datos.

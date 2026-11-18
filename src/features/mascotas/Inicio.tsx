@@ -8,7 +8,8 @@ import TarjetaAviso from '../../components/ui/TarjetaAviso'
 import TarjetaDato from '../../components/ui/TarjetaDato'
 import TarjetaMascota from '../../components/ui/TarjetaMascota'
 import { cuponesVigentes } from '../../lib/cuponesEjemplo'
-import { estadoMascota, proximaCampana, tutor } from '../../lib/datosEjemplo'
+import { campanasProximas } from '../../lib/campanasEjemplo'
+import { estadoMascota, tutor } from '../../lib/datosEjemplo'
 import { hoyISO } from '../../lib/edad'
 import { formatearFecha } from '../../lib/fechas'
 import { useSesion } from '../auth/contextoSesion'
@@ -26,12 +27,21 @@ export default function Inicio() {
   const [hoy] = useState(() => hoyISO())
   const proxima = cartilla?.proxima
 
+  const siguiente = campanasProximas(hoy)[0]
+
   const campana = (
-    <TarjetaAviso
-      icono={<Plus aria-hidden="true" size={26} />}
-      colorIcono="bg-salud-fondo text-salud-trazo"
-      {...proximaCampana}
-    />
+    <Link to="/comunidad" className={enlaceAviso}>
+      <TarjetaAviso
+        icono={<Plus aria-hidden="true" size={26} />}
+        colorIcono="bg-salud-fondo text-salud-trazo"
+        titulo={siguiente ? siguiente.titulo : 'Sin campañas próximas'}
+        detalle={
+          siguiente
+            ? `${formatearFecha(siguiente.fecha, siguiente.fecha.slice(0, 4) !== hoy.slice(0, 4))} · ${siguiente.lugar}`
+            : 'Consulta aliados y clínicas en Comunidad'
+        }
+      />
+    </Link>
   )
 
   return (
