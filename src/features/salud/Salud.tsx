@@ -17,7 +17,7 @@ export default function Salud() {
   const activa = params.get('tab') === 'cupones' ? 'cupones' : 'cartilla'
   const { mascotas, cargando: cargandoMascotas } = useMascotas()
   const mascota = mascotas[0]
-  const { cartilla, cargando, ...acciones } = useCartilla(mascota?.id)
+  const { cartilla, cargando, error, ...acciones } = useCartilla(mascota?.id)
 
   function cambiar(id: string) {
     setParams(id === 'cartilla' ? {} : { tab: id }, { replace: true })
@@ -30,7 +30,13 @@ export default function Salud() {
       <div id={`salud-panel-${activa}`} role="tabpanel" aria-labelledby={`salud-tab-${activa}`}>
         {activa === 'cupones' ? (
           <PanelCupones />
-        ) : cargandoMascotas || cargando ? null : mascota && cartilla ? (
+        ) : cargandoMascotas || cargando ? null : error ? (
+          <Tarjeta className="p-5">
+            <p role="alert" className="text-sm">
+              No pudimos cargar la cartilla. Revisa tu conexión e inténtalo de nuevo.
+            </p>
+          </Tarjeta>
+        ) : mascota && cartilla ? (
           <PanelCartilla key={mascota.id} mascota={mascota} cartilla={cartilla} acciones={acciones} />
         ) : (
           <Tarjeta className="flex flex-col gap-3 p-5 text-center">

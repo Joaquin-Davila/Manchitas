@@ -7,17 +7,22 @@ import { useSesion } from '../auth/contextoSesion'
 export function useMascotas() {
   const { sesion } = useSesion()
   const correo = sesion?.correo
-  const [estado, setEstado] = useState<{ mascotas: Mascota[]; cargando: boolean }>({
+  const [estado, setEstado] = useState<{ mascotas: Mascota[]; cargando: boolean; error: boolean }>({
     mascotas: [],
     cargando: true,
+    error: false,
   })
 
   useEffect(() => {
     if (!correo) return
     let vigente = true
-    listarMascotas(correo).then((mascotas) => {
-      if (vigente) setEstado({ mascotas, cargando: false })
-    })
+    listarMascotas(correo)
+      .then((mascotas) => {
+        if (vigente) setEstado({ mascotas, cargando: false, error: false })
+      })
+      .catch(() => {
+        if (vigente) setEstado({ mascotas: [], cargando: false, error: true })
+      })
     return () => {
       vigente = false
     }

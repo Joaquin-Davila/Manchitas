@@ -9,17 +9,18 @@ export type Mascota = {
   nacimiento: string
   senas: string
   nota: string
-  /** Foto reducida, como data URL, hasta que haya almacenamiento en Supabase. */
+  /** URL de la foto: data URL en modo local, URL de Storage con Supabase. */
   fotoUrl?: string
   /** ID público aleatorio, p. ej. MCH-7K3P9Q. */
   folio: string
   /** Token largo del QR, distinto del folio y no adivinable. */
   token: string
   creadaEn: string
-  tutorCorreo: string
-  /** Copia del apellido del tutor (en Supabase vendrá de su perfil). */
+  /** Solo en modo local; con Supabase el dueño lo decide la base (RLS). */
+  tutorCorreo?: string
+  /** Solo en modo local; con Supabase sale del perfil del tutor. */
   tutorApellido?: string
-  /** Copia del WhatsApp del tutor. Nunca se muestra en pantalla. */
+  /** Solo en modo local. Nunca se muestra en pantalla. */
   tutorTelefono?: string
 }
 

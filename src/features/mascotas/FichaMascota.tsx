@@ -27,9 +27,13 @@ export default function FichaMascota() {
   useEffect(() => {
     if (!id || !correo) return
     let vigente = true
-    obtenerMascota(id, correo).then((encontrada) => {
-      if (vigente) setMascota(encontrada)
-    })
+    obtenerMascota(id, correo)
+      .then((encontrada) => {
+        if (vigente) setMascota(encontrada)
+      })
+      .catch(() => {
+        if (vigente) setMascota(null)
+      })
     return () => {
       vigente = false
     }

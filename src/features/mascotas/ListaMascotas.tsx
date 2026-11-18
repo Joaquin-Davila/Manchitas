@@ -7,9 +7,19 @@ import { textoEdad } from '../../lib/edad'
 import { useMascotas } from './useMascotas'
 
 export default function ListaMascotas() {
-  const { mascotas, cargando } = useMascotas()
+  const { mascotas, cargando, error } = useMascotas()
 
   if (cargando) return null
+
+  if (error) {
+    return (
+      <Tarjeta className="p-5">
+        <p role="alert" className="text-sm">
+          No pudimos cargar a tus mascotas. Revisa tu conexión e inténtalo de nuevo.
+        </p>
+      </Tarjeta>
+    )
+  }
 
   if (mascotas.length === 0) {
     return (

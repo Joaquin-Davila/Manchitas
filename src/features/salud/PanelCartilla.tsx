@@ -15,7 +15,7 @@ import type { useCartilla } from './useCartilla'
 type Props = {
   mascota: Mascota
   cartilla: Cartilla
-  acciones: Omit<ReturnType<typeof useCartilla>, 'cartilla' | 'cargando'>
+  acciones: Omit<ReturnType<typeof useCartilla>, 'cartilla' | 'cargando' | 'error'>
 }
 
 function mensajeDe(error: unknown, porDefecto: string): string {

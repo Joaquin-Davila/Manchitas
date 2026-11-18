@@ -45,6 +45,9 @@ const CAMPOS_POR_PASO: (keyof Valores)[][] = [
 
 export default function Registro() {
   const [paso, setPaso] = useState(1)
+  const [enviando, setEnviando] = useState(false)
+  const [errorGeneral, setErrorGeneral] = useState('')
+  const [pendienteConfirmar, setPendienteConfirmar] = useState(false)
   const { registrar } = useSesion()
   const navigate = useNavigate()
   const { valores, errores, campo, cambiar, validar } = useCampos<Valores>(
@@ -63,7 +66,7 @@ export default function Registro() {
     tituloPaso.current?.focus()
   }, [paso])
 
-  function enviar(e: FormEvent<HTMLFormElement>) {
+  async function enviar(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const primero = validar(CAMPOS_POR_PASO[paso - 1])
     if (primero) {
@@ -74,16 +77,43 @@ export default function Registro() {
       setPaso(paso + 1)
       return
     }
-    registrar({
-      nombre: valores.nombre.trim(),
-      apellido: valores.apellido.trim(),
-      correo: valores.correo.trim(),
-      telefono: valores.telefono.replace(/[\s-]/g, ''),
-    })
-    navigate('/', { replace: true })
+    setErrorGeneral('')
+    setEnviando(true)
+    try {
+      const { requiereConfirmacion } = await registrar(
+        {
+          nombre: valores.nombre.trim(),
+          apellido: valores.apellido.trim(),
+          correo: valores.correo.trim(),
+          telefono: valores.telefono.replace(/[\s-]/g, ''),
+        },
+        valores.contrasena,
+      )
+      if (requiereConfirmacion) setPendienteConfirmar(true)
+      else navigate('/', { replace: true })
+    } catch (error) {
+      setErrorGeneral(error instanceof Error ? error.message : 'No pudimos crear tu cuenta.')
+    } finally {
+      setEnviando(false)
+    }
   }
 
   const nombrePaso = PASOS[paso - 1]
+
+  if (pendienteConfirmar) {
+    return (
+      <>
+        <EncabezadoCurvo titulo="Revisa tu correo" atras="/bienvenida" />
+        <main className="flex flex-col gap-4 px-5 pb-10 pt-8" role="status">
+          <p className="text-sm">
+            Te enviamos un mensaje a <strong>{valores.correo.trim()}</strong>. Abre el enlace para confirmar tu
+            cuenta y después inicia sesión.
+          </p>
+          <BotonPrincipal to="/iniciar-sesion">Ir a iniciar sesión</BotonPrincipal>
+        </main>
+      </>
+    )
+  }
 
   return (
     <>
@@ -196,8 +226,9 @@ export default function Registro() {
           )}
 
           <div className="mt-2 flex flex-col gap-4">
-            <BotonPrincipal type="submit">
-              {paso < PASOS.length ? 'Siguiente' : 'Crear cuenta'}
+            {errorGeneral && <MensajeError id="error-general">{errorGeneral}</MensajeError>}
+            <BotonPrincipal type="submit" disabled={enviando}>
+              {paso < PASOS.length ? 'Siguiente' : enviando ? 'Creando tu cuenta…' : 'Crear cuenta'}
             </BotonPrincipal>
             {paso > 1 && (
               <BotonSecundario onClick={() => setPaso(paso - 1)}>Atrás</BotonSecundario>

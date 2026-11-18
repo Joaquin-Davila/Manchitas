@@ -22,17 +22,26 @@ export default function BuscarPorId() {
   const { valores, campo, validar } = useCampos<Valores>({ folio: '' }, reglas)
   const [noEncontrado, setNoEncontrado] = useState(false)
   const [buscando, setBuscando] = useState(false)
+  const [errorBusqueda, setErrorBusqueda] = useState('')
 
   async function enviar(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setNoEncontrado(false)
+    setErrorBusqueda('')
     const primero = validar(['folio'])
     if (primero) {
       ;(e.currentTarget.elements.namedItem(primero) as HTMLElement | null)?.focus()
       return
     }
     setBuscando(true)
-    const token = await tokenPorFolio(valores.folio)
+    let token: string | null = null
+    try {
+      token = await tokenPorFolio(valores.folio)
+    } catch (error) {
+      setBuscando(false)
+      setErrorBusqueda(error instanceof Error ? error.message : 'No pudimos hacer la búsqueda.')
+      return
+    }
     if (token) {
       navigate(`/m/${token}`)
     } else {
@@ -69,6 +78,7 @@ export default function BuscarPorId() {
               No encontramos ese ID. Revisa que esté completo y vuelve a intentarlo.
             </MensajeError>
           )}
+          {errorBusqueda && <MensajeError id="error-busqueda-red">{errorBusqueda}</MensajeError>}
           <BotonPrincipal type="submit" disabled={buscando}>
             {buscando ? 'Buscando…' : 'Buscar'}
           </BotonPrincipal>

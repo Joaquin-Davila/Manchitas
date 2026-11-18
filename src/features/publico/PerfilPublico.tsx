@@ -17,9 +17,13 @@ export default function PerfilPublico() {
   useEffect(() => {
     if (!token) return
     let vigente = true
-    perfilPorToken(token).then((p) => {
-      if (vigente) setPerfil(p)
-    })
+    perfilPorToken(token)
+      .then((p) => {
+        if (vigente) setPerfil(p)
+      })
+      .catch(() => {
+        if (vigente) setPerfil(null)
+      })
     return () => {
       vigente = false
     }

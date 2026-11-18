@@ -1,10 +1,14 @@
+import { FunctionsHttpError } from '@supabase/supabase-js'
 import type { DatosReporte, Reporte, SeguimientoReporte } from '../types/reporte'
 import { generarFolioReporte } from './identificadores'
+import { clienteRemoto, haySupabase } from './supabase'
 
-// Repositorio de reportes ciudadanos. Hoy guarda en localStorage; en el paso 10 se reemplaza por
-// Supabase sin tocar las pantallas. Ahí el límite de envíos y la consulta por folio pasan al
-// servidor (por IP, con verificación), porque el límite de este archivo se puede saltar borrando
-// los datos del navegador.
+// Repositorio de reportes ciudadanos (sin cuenta).
+//   - Con Supabase: el envío pasa por la función de Edge `enviar-reporte`, que valida, sube la
+//     evidencia y aplica el límite de envíos por IP en el servidor; el seguimiento usa la función
+//     `seguimiento_reporte`, que solo devuelve folio, tipo, fecha y estado.
+//   - Sin Supabase: localStorage. Ese límite se puede saltar borrando los datos del navegador;
+//     solo sirve para el prototipo.
 const CLAVE = 'manchitas.reportes'
 const CLAVE_ENVIOS = 'manchitas.reportes.envios'
 
@@ -33,8 +37,13 @@ function enviosRecientes(ahora: number): number[] {
   return leer<number[]>(CLAVE_ENVIOS, []).filter((t) => ahora - t < VENTANA_MS)
 }
 
-/** Cuántos reportes más puede enviar este dispositivo hoy. */
+/**
+ * Cuántos reportes más puede enviar este dispositivo hoy. Con Supabase el servidor es quien
+ * cuenta (por IP), así que de entrada no se sabe y se asume el máximo; si ya se pasó, el envío
+ * responde con el aviso.
+ */
 export async function enviosDisponibles(ahora = Date.now()): Promise<number> {
+  if (haySupabase) return LIMITE_ENVIOS
   return Math.max(0, LIMITE_ENVIOS - enviosRecientes(ahora).length)
 }
 
@@ -45,11 +54,30 @@ export function normalizarFolioReporte(texto: string): string | null {
   return m ? `REP-${m[1]}` : null
 }
 
+async function enviarRemoto(datos: DatosReporte, trampa: string): Promise<string> {
+  const { data, error } = await clienteRemoto().functions.invoke('enviar-reporte', {
+    body: { datos, trampa },
+  })
+  if (error) {
+    // Los errores de la función traen un mensaje ya redactado en español.
+    if (error instanceof FunctionsHttpError) {
+      const detalle = (await error.context.json().catch(() => null)) as { error?: string } | null
+      if (detalle?.error) throw new Error(detalle.error)
+    }
+    throw new Error('No pudimos enviar tu reporte. Revisa tu conexión e inténtalo de nuevo.')
+  }
+  const folio = (data as { folio?: string } | null)?.folio
+  if (!folio) throw new Error('No pudimos enviar tu reporte. Inténtalo de nuevo.')
+  return folio
+}
+
 /**
  * Guarda el reporte y devuelve su folio. Si el campo trampa (`trampa`) viene lleno es un bot:
  * se responde igual que a una persona, pero no se guarda nada.
  */
 export async function enviarReporte(datos: DatosReporte, trampa = ''): Promise<string> {
+  if (haySupabase) return enviarRemoto(datos, trampa)
+
   const ahora = Date.now()
   const recientes = enviosRecientes(ahora)
   if (recientes.length >= LIMITE_ENVIOS) {
@@ -77,9 +105,31 @@ export async function enviarReporte(datos: DatosReporte, trampa = ''): Promise<s
   return unico
 }
 
+type FilaSeguimiento = {
+  folio: string
+  tipo: SeguimientoReporte['tipo']
+  creado_en: string
+  estado: SeguimientoReporte['estado']
+}
+
+/** Devuelve null si no existe. Falla si se hacen demasiadas consultas seguidas. */
 export async function seguimientoPorFolio(texto: string): Promise<SeguimientoReporte | null> {
   const folio = normalizarFolioReporte(texto)
   if (!folio) return null
+
+  if (haySupabase) {
+    const { data, error } = await clienteRemoto().rpc('seguimiento_reporte', { p_folio: folio })
+    if (error) {
+      throw new Error(
+        error.message.includes('limite_excedido')
+          ? 'Hiciste muchas consultas seguidas. Espera unos minutos e inténtalo de nuevo.'
+          : 'No pudimos consultar el folio. Revisa tu conexión e inténtalo de nuevo.',
+      )
+    }
+    const f = (data as FilaSeguimiento[] | null)?.[0]
+    return f ? { folio: f.folio, tipo: f.tipo, creadoEn: f.creado_en, estado: f.estado } : null
+  }
+
   const r = leer<Reporte[]>(CLAVE, []).find((x) => x.folio === folio)
   return r ? { folio: r.folio, tipo: r.tipo, creadoEn: r.creadoEn, estado: r.estado } : null
 }

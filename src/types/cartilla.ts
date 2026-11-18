@@ -19,7 +19,7 @@ export type ProximaVacuna = {
 export type Cartilla = {
   vacunas: VacunaAplicada[]
   proxima?: ProximaVacuna
-  /** Foto reducida de la cartilla, como data URL, hasta que haya almacenamiento en Supabase. */
+  /** Foto de la cartilla: data URL en modo local; con Supabase, URL firmada temporal (1 hora). */
   fotoCartilla?: string
   /** Si es false, Inicio no muestra el recordatorio de la próxima vacuna. */
   recordatorio: boolean

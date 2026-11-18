@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import type { FormEvent } from 'react'
 import BotonPrincipal from '../../components/ui/BotonPrincipal'
 import CampoTexto from '../../components/ui/CampoTexto'
 import EncabezadoCurvo from '../../components/ui/EncabezadoCurvo'
+import MensajeError from '../../components/ui/MensajeError'
 import { validarContrasenaActual, validarCorreo } from '../../lib/validaciones'
 import CampoContrasena from './CampoContrasena'
 import { useSesion } from './contextoSesion'
@@ -19,17 +21,26 @@ const reglas: Reglas<Valores> = {
 export default function IniciarSesion() {
   const { iniciarSesion } = useSesion()
   const navigate = useNavigate()
+  const [enviando, setEnviando] = useState(false)
+  const [errorGeneral, setErrorGeneral] = useState('')
   const { valores, campo, validar } = useCampos<Valores>({ correo: '', contrasena: '' }, reglas)
 
-  function enviar(e: FormEvent<HTMLFormElement>) {
+  async function enviar(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const primero = validar(['correo', 'contrasena'])
     if (primero) {
       ;(e.currentTarget.elements.namedItem(primero) as HTMLElement | null)?.focus()
       return
     }
-    iniciarSesion(valores.correo.trim())
-    navigate('/', { replace: true })
+    setErrorGeneral('')
+    setEnviando(true)
+    try {
+      await iniciarSesion(valores.correo.trim(), valores.contrasena)
+      navigate('/', { replace: true })
+    } catch (error) {
+      setErrorGeneral(error instanceof Error ? error.message : 'No pudimos iniciar tu sesión.')
+      setEnviando(false)
+    }
   }
 
   return (
@@ -54,8 +65,9 @@ export default function IniciarSesion() {
             required
             {...campo('contrasena')}
           />
-          <BotonPrincipal type="submit" className="mt-2">
-            Iniciar sesión
+          {errorGeneral && <MensajeError id="error-general">{errorGeneral}</MensajeError>}
+          <BotonPrincipal type="submit" disabled={enviando} className="mt-2">
+            {enviando ? 'Entrando…' : 'Iniciar sesión'}
           </BotonPrincipal>
         </form>
         <p className="mt-6 text-center text-sm text-cafe-suave">

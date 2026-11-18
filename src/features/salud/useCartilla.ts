@@ -10,14 +10,18 @@ import type { Cartilla, DatosVacuna } from '../../types/cartilla'
 
 /** Cartilla de una mascota. Las acciones devuelven una promesa que falla con un mensaje en español. */
 export function useCartilla(mascotaId: string | undefined) {
-  const [estado, setEstado] = useState<{ id: string; cartilla: Cartilla } | null>(null)
+  const [estado, setEstado] = useState<{ id: string; cartilla?: Cartilla; error?: boolean } | null>(null)
 
   useEffect(() => {
     if (!mascotaId) return
     let vigente = true
-    obtenerCartilla(mascotaId).then((cartilla) => {
-      if (vigente) setEstado({ id: mascotaId, cartilla })
-    })
+    obtenerCartilla(mascotaId)
+      .then((cartilla) => {
+        if (vigente) setEstado({ id: mascotaId, cartilla })
+      })
+      .catch(() => {
+        if (vigente) setEstado({ id: mascotaId, error: true })
+      })
     return () => {
       vigente = false
     }
@@ -34,6 +38,7 @@ export function useCartilla(mascotaId: string | undefined) {
   const cargando = mascotaId !== undefined && estado?.id !== mascotaId
   return {
     cartilla: estado && estado.id === mascotaId ? estado.cartilla : undefined,
+    error: estado !== null && estado.id === mascotaId && estado.error === true,
     cargando,
     registrarVacuna: (datos: DatosVacuna) => aplicar(registrarVacuna(mascotaId!, datos)),
     eliminarVacuna: (id: string) => aplicar(eliminarVacuna(mascotaId!, id)),

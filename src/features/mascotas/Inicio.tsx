@@ -21,7 +21,7 @@ const enlaceAviso =
 
 export default function Inicio() {
   const { sesion } = useSesion()
-  const { mascotas, cargando } = useMascotas()
+  const { mascotas, cargando, error } = useMascotas()
   const mascota = mascotas[0]
   const { cartilla } = useCartilla(mascota?.id)
   const [hoy] = useState(() => hoyISO())
@@ -50,7 +50,13 @@ export default function Inicio() {
         ¡Hola, {sesion?.nombre ?? tutor.nombre}!
       </h2>
 
-      {cargando ? null : mascota ? (
+      {cargando ? null : error ? (
+        <Tarjeta className="p-5">
+          <p role="alert" className="text-sm">
+            No pudimos cargar a tus mascotas. Revisa tu conexión e inténtalo de nuevo.
+          </p>
+        </Tarjeta>
+      ) : mascota ? (
         <>
           <Link
             to={`/mascotas/${mascota.id}`}

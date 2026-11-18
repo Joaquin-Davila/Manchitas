@@ -32,6 +32,7 @@ export default function Seguimiento() {
   const { campo, valores, validar } = useCampos<Valores>({ folio: '' }, reglas)
   const [buscando, setBuscando] = useState(false)
   const [noEncontrado, setNoEncontrado] = useState(false)
+  const [errorRed, setErrorRed] = useState('')
   const [resultado, setResultado] = useState<SeguimientoReporte>()
 
   async function enviar(e: FormEvent<HTMLFormElement>) {
@@ -44,10 +45,16 @@ export default function Seguimiento() {
       return
     }
     setBuscando(true)
-    const encontrado = await seguimientoPorFolio(valores.folio)
-    setBuscando(false)
-    if (encontrado) setResultado(encontrado)
-    else setNoEncontrado(true)
+    setErrorRed('')
+    try {
+      const encontrado = await seguimientoPorFolio(valores.folio)
+      if (encontrado) setResultado(encontrado)
+      else setNoEncontrado(true)
+    } catch (error) {
+      setErrorRed(error instanceof Error ? error.message : 'No pudimos consultar el folio.')
+    } finally {
+      setBuscando(false)
+    }
   }
 
   return (
@@ -73,6 +80,7 @@ export default function Seguimiento() {
               No encontramos ese folio. Revisa que esté completo y vuelve a intentarlo.
             </MensajeError>
           )}
+          {errorRed && <MensajeError id="error-seguimiento-red">{errorRed}</MensajeError>}
           <BotonPrincipal type="submit" disabled={buscando}>
             {buscando ? 'Buscando…' : 'Consultar'}
           </BotonPrincipal>

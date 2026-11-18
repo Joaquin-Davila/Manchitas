@@ -1,10 +1,22 @@
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
+import { haySupabase } from '../../lib/supabase'
 import { ContextoSesion } from './contextoSesion'
 import type { Sesion, ValorSesion } from './contextoSesion'
+import ProveedorSesionSupabase from './ProveedorSesionSupabase'
 
-// SESIÓN SIMULADA: mientras no hay Supabase (paso 10) no se verifica ninguna
-// contraseña ni se guarda en ningún lado. Solo se recuerda nombre y correo.
+// Con Supabase configurado (.env) la sesión es real (Supabase Auth). Sin él, el prototipo
+// sigue en modo local: sesión simulada, sin verificar contraseñas.
+export default function ProveedorSesion({ children }: { children: ReactNode }) {
+  return haySupabase ? (
+    <ProveedorSesionSupabase>{children}</ProveedorSesionSupabase>
+  ) : (
+    <ProveedorSesionLocal>{children}</ProveedorSesionLocal>
+  )
+}
+
+// --- Modo local (sin Supabase) -----------------------------------------------------------
+// No se verifica ninguna contraseña ni se guarda en ningún lado. Solo se recuerda nombre y correo.
 const CLAVE_SESION = 'manchitas.sesion'
 const CLAVE_CUENTA = 'manchitas.cuenta'
 
@@ -32,13 +44,14 @@ function nombreDesdeCorreo(correo: string): string {
   return base ? base.charAt(0).toUpperCase() + base.slice(1) : 'Tutor'
 }
 
-export default function ProveedorSesion({ children }: { children: ReactNode }) {
+function ProveedorSesionLocal({ children }: { children: ReactNode }) {
   const [sesion, setSesion] = useState<Sesion | null>(() => leer(CLAVE_SESION))
 
   const valor = useMemo<ValorSesion>(
     () => ({
       sesion,
-      iniciarSesion(correo) {
+      cargando: false,
+      async iniciarSesion(correo) {
         const cuenta = leer(CLAVE_CUENTA)
         const nueva: Sesion =
           cuenta && cuenta.correo.toLowerCase() === correo.toLowerCase()
@@ -47,12 +60,13 @@ export default function ProveedorSesion({ children }: { children: ReactNode }) {
         guardar(CLAVE_SESION, nueva)
         setSesion(nueva)
       },
-      registrar(datos) {
+      async registrar(datos) {
         guardar(CLAVE_CUENTA, datos)
         guardar(CLAVE_SESION, datos)
         setSesion(datos)
+        return { requiereConfirmacion: false }
       },
-      cerrarSesion() {
+      async cerrarSesion() {
         guardar(CLAVE_SESION, null)
         setSesion(null)
       },
