@@ -1,4 +1,4 @@
-import { BadgeCheck, Cat, Dog } from 'lucide-react'
+import { BadgeCheck } from 'lucide-react'
 import { useState } from 'react'
 import CampoTexto from '../../components/ui/CampoTexto'
 import Tarjeta from '../../components/ui/Tarjeta'
@@ -100,16 +100,22 @@ export default function PanelAdopcion() {
       ) : (
         <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 md:grid-cols-3 lg:grid-cols-4">
           {lista.map((a) => {
-            const Icono = a.especie === 'gato' ? Cat : Dog
             return (
               <li key={a.id}>
                 <Tarjeta className="flex h-full flex-col overflow-hidden">
-                  <div
-                    role="img"
-                    aria-label={`Foto pendiente de ${a.nombre}`}
-                    className="flex h-24 items-center justify-center bg-foto-vacia md:h-32 text-huella"
-                  >
-                    <Icono aria-hidden="true" size={44} />
+                  <div className="relative aspect-[4/3] bg-foto-vacia">
+                    <img
+                      src={a.foto}
+                      alt={a.fotoAlt}
+                      width={480}
+                      height={360}
+                      loading="lazy"
+                      decoding="async"
+                      className="size-full object-cover"
+                    />
+                    <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-cafe">
+                      Foto de ejemplo
+                    </span>
                   </div>
                   <div className="flex flex-1 flex-col gap-1 p-3">
                     <p className="font-titulo text-base font-semibold leading-snug">{a.nombre}</p>

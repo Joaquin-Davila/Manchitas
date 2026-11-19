@@ -1,4 +1,5 @@
 // Datos de ejemplo: animales y albergues inventados, sin teléfonos ni direcciones.
+// Las fotos son de banco (Pexels) y no corresponden a los animales: la interfaz las rotula "Foto de ejemplo".
 // El sello "Verificado" es de ejemplo: no promete una verificación real hasta que la valide
 // el Instituto o un veterinario. El contacto real llegará con Supabase.
 
@@ -15,6 +16,9 @@ export type Animal = {
   descripcion: string
   publicadoPor: string
   verificado: boolean
+  /** Foto de banco gratuito (Pexels), de ejemplo: no es el animal real. Créditos en docs/ATRIBUCION-IMAGENES.md. */
+  foto: string
+  fotoAlt: string
 }
 
 export type FiltrosAdopcion = {
@@ -26,6 +30,8 @@ export type FiltrosAdopcion = {
 export const animales: Animal[] = [
   {
     id: 'p1',
+    foto: '/img/adopcion-canela.webp',
+    fotoAlt: 'Perro color café claro sentado entre plantas, mirando hacia arriba',
     nombre: 'Canela',
     especie: 'perro',
     edadMeses: 8,
@@ -37,6 +43,8 @@ export const animales: Animal[] = [
   },
   {
     id: 'p2',
+    foto: '/img/adopcion-toto.webp',
+    fotoAlt: 'Perro dorado de perfil, al aire libre',
     nombre: 'Toto',
     especie: 'perro',
     edadMeses: 36,
@@ -48,6 +56,8 @@ export const animales: Animal[] = [
   },
   {
     id: 'p3',
+    foto: '/img/adopcion-pelusa.webp',
+    fotoAlt: 'Cachorro chihuahua blanco con café, recostado sobre una alfombra',
     nombre: 'Pelusa',
     especie: 'perro',
     edadMeses: 5,
@@ -59,6 +69,8 @@ export const animales: Animal[] = [
   },
   {
     id: 'p4',
+    foto: '/img/adopcion-bruno.webp',
+    fotoAlt: 'Primer plano de un pastor alemán',
     nombre: 'Bruno',
     especie: 'perro',
     edadMeses: 60,
@@ -70,6 +82,8 @@ export const animales: Animal[] = [
   },
   {
     id: 'p5',
+    foto: '/img/adopcion-lola.webp',
+    fotoAlt: 'Perra chihuahua café de orejas grandes, mirando a la cámara',
     nombre: 'Lola',
     especie: 'perro',
     edadMeses: 24,
@@ -81,6 +95,8 @@ export const animales: Animal[] = [
   },
   {
     id: 'g1',
+    foto: '/img/adopcion-misho.webp',
+    fotoAlt: 'Gatito atigrado de ojos azules',
     nombre: 'Misho',
     especie: 'gato',
     edadMeses: 4,
@@ -92,6 +108,8 @@ export const animales: Animal[] = [
   },
   {
     id: 'g2',
+    foto: '/img/adopcion-luna.webp',
+    fotoAlt: 'Gata atigrada que mira hacia arriba',
     nombre: 'Luna',
     especie: 'gato',
     edadMeses: 30,
@@ -103,6 +121,8 @@ export const animales: Animal[] = [
   },
   {
     id: 'g3',
+    foto: '/img/adopcion-tigre.webp',
+    fotoAlt: 'Gato atigrado naranja de ojos verdes',
     nombre: 'Tigre',
     especie: 'gato',
     edadMeses: 72,

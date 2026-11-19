@@ -30,6 +30,12 @@ export default function FichaAdopcion({ animal, onCerrar }: Props) {
       onClick={(e) => e.target === ref.current && ref.current?.close()}
       className="m-auto w-[calc(100%-40px)] max-w-[350px] rounded-tarjeta bg-crema p-0 text-cafe shadow-tarjeta backdrop:bg-black/50"
     >
+      <div className="relative aspect-[4/3] overflow-hidden rounded-t-tarjeta bg-foto-vacia">
+        <img src={animal.foto} alt={animal.fotoAlt} width={480} height={360} className="size-full object-cover" />
+        <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-cafe">
+          Foto de ejemplo
+        </span>
+      </div>
       <div className="flex flex-col gap-3 p-5">
         <div className="flex items-start justify-between gap-2">
           <h2 id="ficha-adopcion-titulo" className="font-titulo text-xl font-bold">
