@@ -18,7 +18,7 @@ values
   ('00000000-0000-0000-0000-000000000000', 'de000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated',
    'demo@manchitas.mx', extensions.crypt('__DEMO_PASSWORD__', extensions.gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}'::jsonb,
-   '{"nombre":"Adriana","apellido":"Demo","telefono":"0000000000","ciudad":"Hermosillo","colonia":"Pitic","tipo_usuario":"tutor","acepto_privacidad":"true","version_aviso":"borrador-1"}'::jsonb,
+   '{"nombre":"Adriana","apellido":"Demo","telefono":"__DEMO_TELEFONO__","ciudad":"Hermosillo","colonia":"Pitic","tipo_usuario":"tutor","acepto_privacidad":"true","version_aviso":"borrador-1"}'::jsonb,
    now(), now(), '', '', '', '')
 on conflict (id) do nothing;
 
@@ -33,7 +33,7 @@ update auth.users set encrypted_password = extensions.crypt('__DEMO_PASSWORD__',
        email_confirmed_at = coalesce(email_confirmed_at, now())
  where id = 'de000000-0000-4000-8000-000000000001';
 
-update public.perfiles set es_demo = true, nombre = 'Adriana', apellido = 'Demo', telefono = '0000000000',
+update public.perfiles set es_demo = true, nombre = 'Adriana', apellido = 'Demo', telefono = '__DEMO_TELEFONO__',
        ciudad = 'Hermosillo', colonia = 'Pitic', tipo_usuario = 'tutor', rol = 'tutor'
  where id = 'de000000-0000-4000-8000-000000000001';
 

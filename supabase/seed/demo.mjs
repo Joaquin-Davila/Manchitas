@@ -40,6 +40,12 @@ if (env.VITE_DEMO_PASSWORD.length < 8) throw new Error('VITE_DEMO_PASSWORD debe 
 if (env.VITE_DEMO_EMAIL !== 'demo@manchitas.mx')
   throw new Error('El seed crea la cuenta demo@manchitas.mx; cambia el SQL si quieres otro correo.')
 
+// WhatsApp de la cuenta demo (10 dígitos): es el número al que llega quien escanea el QR de sus mascotas.
+// Pon en .env DEMO_WHATSAPP=<un número que tengas a la mano> para la presentación. Sin él se usa uno
+// inexistente (0000000000) y el botón de WhatsApp de la ficha no llegará a nadie.
+const telefonoDemo = env.DEMO_WHATSAPP || '0000000000'
+if (!/^[0-9]{10}$/.test(telefonoDemo)) throw new Error('DEMO_WHATSAPP debe tener exactamente 10 dígitos.')
+
 // Las fotos van en supabase/seed/fotos/<archivo> (JPEG, máx. 2 MB). Si falta un archivo, esa mascota
 // se queda sin foto (la interfaz muestra un ícono) y el seed sigue.
 const MASCOTAS = [
@@ -58,7 +64,7 @@ const FOTOS_VIEJAS = ['demo-mochi.jpg', 'demo-duque.jpg', 'demo-manchas.jpg']
 const ID_DEMO = 'de000000-0000-4000-8000-000000000001'
 
 console.log('Proyecto:', new URL(env.VITE_SUPABASE_URL).host)
-console.log('Cuenta demo:', env.VITE_DEMO_EMAIL)
+console.log('Cuenta demo:', env.VITE_DEMO_EMAIL, '| WhatsApp de la demo:', telefonoDemo === '0000000000' ? '(ninguno real: define DEMO_WHATSAPP en .env)' : 'definido')
 console.log('Pasos: 1) SQL de datos (CLI, remoto)  2) fotos de las 9 mascotas (como la cuenta demo)')
 if (!aplicar) {
   console.log('\nSimulacro: no se escribió nada. Agrega --aplicar para ejecutar.')
@@ -66,7 +72,7 @@ if (!aplicar) {
 }
 
 // 1) SQL con la contraseña sustituida, en un archivo temporal que se borra al terminar.
-const sql = ['demo.sql', 'demo-b.sql', 'demo-c.sql', 'demo-d.sql'].map((f) => readFileSync(join(aqui, f), 'utf8')).join('\n').replaceAll('__DEMO_PASSWORD__', env.VITE_DEMO_PASSWORD.replaceAll("'", "''"))
+const sql = ['demo.sql', 'demo-b.sql', 'demo-c.sql', 'demo-d.sql'].map((f) => readFileSync(join(aqui, f), 'utf8')).join('\n').replaceAll('__DEMO_PASSWORD__', env.VITE_DEMO_PASSWORD.replaceAll("'", "''")).replaceAll('__DEMO_TELEFONO__', telefonoDemo)
 const temporal = join(tmpdir(), `manchitas-demo-${process.pid}.sql`)
 writeFileSync(temporal, sql)
 try {
