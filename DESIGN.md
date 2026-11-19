@@ -100,3 +100,6 @@ El diseño de móvil (390 px) no cambia. Se adapta con dos puntos de quiebre de 
 - **Pantallas sin barra** (bienvenida, sesión, registro, QR público, reportes): tarjeta centrada de 480 px desde `md`, con esquinas de 32 px. La bienvenida se abre en dos columnas (foto y acciones) desde `lg`.
 - **Panel de autoridad:** desde `lg`, lista a la izquierda y detalle fijo a la derecha; en pantallas menores, el detalle va en un modal.
 - Las áreas táctiles de 44 px y el contraste de 4.5:1 aplican igual en escritorio.
+
+## Aviso "Sin conexión"
+Franja fija arriba (`sticky`, fondo `#3B2A12`, texto crema 13 px peso 600, ícono de wifi tachado) que solo aparece sin red. Ícono y texto, nunca solo color. `role="status"` y oculta al imprimir.

@@ -13,6 +13,7 @@ import type { PerfilPublico as Perfil } from '../../types/mascota'
 export default function PerfilPublico() {
   const { token } = useParams()
   const [perfil, setPerfil] = useState<Perfil | null | undefined>(undefined)
+  const [falloRed, setFalloRed] = useState(false)
 
   useEffect(() => {
     if (!token) return
@@ -22,7 +23,11 @@ export default function PerfilPublico() {
         if (vigente) setPerfil(p)
       })
       .catch(() => {
-        if (vigente) setPerfil(null)
+        // Un fallo de red no es una ficha inexistente: se avisa distinto.
+        if (vigente) {
+          setFalloRed(true)
+          setPerfil(null)
+        }
       })
     return () => {
       vigente = false
@@ -41,7 +46,23 @@ export default function PerfilPublico() {
           </p>
         )}
 
-        {perfil === null && (
+        {perfil === null && falloRed && (
+          <Tarjeta className="flex flex-col items-start gap-3 p-5">
+            <h2 className="font-titulo text-lg font-semibold">No pudimos cargar la ficha</h2>
+            <p className="text-sm text-cafe-suave">
+              Parece que no hay conexión. Revisa tu internet y vuelve a abrir el QR.
+            </p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="min-h-11 py-2 font-semibold text-naranja-sombra underline"
+            >
+              Reintentar
+            </button>
+          </Tarjeta>
+        )}
+
+        {perfil === null && !falloRed && (
           <Tarjeta className="flex flex-col items-start gap-3 p-5">
             <h2 className="font-titulo text-lg font-semibold">No encontramos esta ficha</h2>
             <p className="text-sm text-cafe-suave">

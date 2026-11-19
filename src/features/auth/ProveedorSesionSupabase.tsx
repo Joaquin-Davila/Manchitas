@@ -66,25 +66,27 @@ export default function ProveedorSesionSupabase({ children }: { children: ReactN
       correo: usuario.correo,
       telefono: texto(usuario.meta.telefono) || undefined,
     }
-    clienteRemoto()
-      .from('perfiles')
-      .select('nombre, apellido, telefono, rol')
-      .eq('id', idUsuario)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!vigente) return
-        setPerfil(
-          data
-            ? {
-                ...respaldo,
-                nombre: data.nombre,
-                apellido: data.apellido ?? '',
-                telefono: data.telefono ?? undefined,
-                rol: data.rol === 'autoridad' ? 'autoridad' : 'tutor',
-              }
-            : respaldo,
-        )
-      })
+    const abrir = (data: { nombre: string; apellido: string | null; telefono: string | null; rol: string } | null) => {
+      if (!vigente) return
+      setPerfil(
+        data
+          ? {
+              ...respaldo,
+              nombre: data.nombre,
+              apellido: data.apellido ?? '',
+              telefono: data.telefono ?? undefined,
+              rol: data.rol === 'autoridad' ? 'autoridad' : 'tutor',
+            }
+          : respaldo,
+      )
+    }
+    // Sin red no se espera a los reintentos de la consulta: se abre con los datos del registro
+    // guardados en la sesión (el rol de autoridad se confirma al volver la conexión). Si la
+    // consulta falla por la red, pasa lo mismo.
+    const consulta: PromiseLike<{ data: Parameters<typeof abrir>[0] }> = navigator.onLine
+      ? clienteRemoto().from('perfiles').select('nombre, apellido, telefono, rol').eq('id', idUsuario).maybeSingle()
+      : Promise.resolve({ data: null })
+    consulta.then(({ data }) => abrir(data), () => abrir(null))
     return () => {
       vigente = false
     }
@@ -120,6 +122,13 @@ export default function ProveedorSesionSupabase({ children }: { children: ReactN
       async cerrarSesion() {
         await clienteRemoto().auth.signOut()
         setPerfil(null)
+        // Nada privado se guarda en caché; aun así se borran las fotos de mascotas vistas, para no
+        // dejar en el dispositivo el rastro de qué fichas se abrieron.
+        try {
+          await caches.delete('fotos-mascotas')
+        } catch {
+          // Sin Cache API (o bloqueada): no hay nada que borrar.
+        }
       },
     }
   }, [usuario, perfil])

@@ -1,34 +1,42 @@
+import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
+import AvisoSinConexion from '../components/ui/AvisoSinConexion'
 import Bienvenida from '../features/auth/Bienvenida'
 import IniciarSesion from '../features/auth/IniciarSesion'
 import LayoutAuth from '../features/auth/LayoutAuth'
-import Privacidad from '../features/auth/Privacidad'
 import Registro from '../features/auth/Registro'
 import RutaProtegida from '../features/auth/RutaProtegida'
-import PanelAutoridad from '../features/autoridad/PanelAutoridad'
 import RutaAutoridad from '../features/autoridad/RutaAutoridad'
-import Comunidad from '../features/comunidad/Comunidad'
-import BuscarPorId from '../features/publico/BuscarPorId'
-import PerfilPublico from '../features/publico/PerfilPublico'
-import CentroReportes from '../features/reportes/CentroReportes'
-import Confirmacion from '../features/reportes/Confirmacion'
-import NuevoReporte from '../features/reportes/NuevoReporte'
-import Reglamento from '../features/reportes/Reglamento'
-import Seguimiento from '../features/reportes/Seguimiento'
-import FichaMascota from '../features/mascotas/FichaMascota'
 import Inicio from '../features/mascotas/Inicio'
 import ListaMascotas from '../features/mascotas/ListaMascotas'
-import NuevaMascota from '../features/mascotas/NuevaMascota'
-import Salud from '../features/salud/Salud'
 import Layout from './Layout'
 import PantallaVacia from './PantallaVacia'
 import { rutas } from './rutas'
+
+// Pantallas diferidas: cada una es su propio chunk. El service worker los guarda todos en el
+// pre-caché, así que también abren sin red.
+const PanelAutoridad = lazy(() => import('../features/autoridad/PanelAutoridad'))
+const Comunidad = lazy(() => import('../features/comunidad/Comunidad'))
+const BuscarPorId = lazy(() => import('../features/publico/BuscarPorId'))
+const PerfilPublico = lazy(() => import('../features/publico/PerfilPublico'))
+const CentroReportes = lazy(() => import('../features/reportes/CentroReportes'))
+const Confirmacion = lazy(() => import('../features/reportes/Confirmacion'))
+const NuevoReporte = lazy(() => import('../features/reportes/NuevoReporte'))
+const Reglamento = lazy(() => import('../features/reportes/Reglamento'))
+const Seguimiento = lazy(() => import('../features/reportes/Seguimiento'))
+const FichaMascota = lazy(() => import('../features/mascotas/FichaMascota'))
+const NuevaMascota = lazy(() => import('../features/mascotas/NuevaMascota'))
+const Salud = lazy(() => import('../features/salud/Salud'))
+const Privacidad = lazy(() => import('../features/auth/Privacidad'))
 
 // Pantallas que aún no existen: solo muestran el encabezado correcto.
 const pendientes = rutas.filter((r) => r.path !== '/' && r.path !== '/mascotas' && r.path !== '/salud' && r.path !== '/avisos' && r.path !== '/comunidad')
 
 export default function App() {
   return (
+    <>
+    <AvisoSinConexion />
+    <Suspense fallback={<p role="status" className="p-6 text-center text-sm text-cafe-suave">Cargando…</p>}>
     <Routes>
       <Route element={<LayoutAuth />}>
         <Route path="bienvenida" element={<Bienvenida />} />
@@ -62,5 +70,7 @@ export default function App() {
         </Route>
       </Route>
     </Routes>
+    </Suspense>
+    </>
   )
 }

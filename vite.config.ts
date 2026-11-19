@@ -11,6 +11,39 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'logo-manchitas.png', 'logo-manchitas-sin-titulo.png'],
+      workbox: {
+        // Pre-caché: estructura de la app, chunks, íconos e imágenes de public/img. De las fuentes
+        // solo las latinas (el español no usa devanagari, cirílico, griego ni vietnamita).
+        globPatterns: ['**/*.{js,css,html,svg,png,webp}', '**/*-latin-*.woff2', '**/*-latin-ext-*.woff2'],
+        navigateFallback: '/index.html',
+        // Nunca devolver el HTML a peticiones de datos.
+        navigateFallbackDenylist: [/^\/(rest|auth|storage|functions)\//],
+        cleanupOutdatedCaches: true,
+        // Solo se cachea en tiempo de ejecución lo que está en esta lista: mosaicos del mapa y fotos
+        // públicas de mascotas. Auth, REST, cartillas, evidencia, URLs firmadas (/object/sign/) y
+        // la función enviar-reporte van siempre directo a la red.
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/tile\.openstreetmap\.org\//,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'mosaicos-osm',
+              expiration: { maxEntries: 150, maxAgeSeconds: 30 * 24 * 60 * 60 },
+              // Leaflet los pide como <img> sin CORS: la respuesta es opaca (estado 0).
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /\/storage\/v1\/object\/public\/mascotas-fotos\//,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'fotos-mascotas',
+              expiration: { maxEntries: 60, maxAgeSeconds: 30 * 24 * 60 * 60 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
+      },
       manifest: {
         name: 'Manchitas',
         short_name: 'Manchitas',
