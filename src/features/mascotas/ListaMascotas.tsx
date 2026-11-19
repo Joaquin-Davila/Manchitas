@@ -39,14 +39,14 @@ export default function ListaMascotas() {
   return (
     <div className="flex flex-col gap-3">
       <h2 className="font-titulo text-lg font-semibold">Mis perros</h2>
-      <ul className="m-0 flex list-none flex-col gap-3 p-0">
+      <ul className="m-0 grid list-none gap-3 p-0 md:grid-cols-2 lg:grid-cols-3">
         {mascotas.map((m) => (
           <li key={m.id}>
             <Link
               to={`/mascotas/${m.id}`}
-              className="block rounded-tarjeta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-naranja"
+              className="block h-full rounded-tarjeta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-naranja"
             >
-              <Tarjeta className="flex items-center gap-3 p-3">
+              <Tarjeta className="flex h-full items-center gap-3 p-3">
                 {m.fotoUrl ? (
                   <img src={m.fotoUrl} alt="" className="size-16 shrink-0 rounded-dato object-cover" />
                 ) : (
@@ -67,7 +67,7 @@ export default function ListaMascotas() {
           </li>
         ))}
       </ul>
-      <BotonPrincipal to="/mascotas/nueva" className="mt-1">
+      <BotonPrincipal to="/mascotas/nueva" className="mt-1 md:max-w-xs">
         Registrar otro perro
       </BotonPrincipal>
     </div>

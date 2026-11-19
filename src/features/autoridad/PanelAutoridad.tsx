@@ -1,5 +1,5 @@
 import { ChevronRight, ExternalLink, Eye, MapPin, Phone, X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import Encabezado from '../../components/ui/Encabezado'
 import MensajeError from '../../components/ui/MensajeError'
 import Tarjeta from '../../components/ui/Tarjeta'
@@ -22,6 +22,20 @@ const TEXTO_ESTADO: Record<EstadoReporte, string> = { recibido: 'Recibido', cana
 // Maltrato y animal herido son los urgentes. Coral va de fondo suave: el texto rojo oscuro
 // mantiene el contraste de 4.5:1 y la etiqueta no depende solo del color.
 const URGENTES = new Set(['maltrato', 'herido'])
+
+// Desde 1024 px el detalle va en un panel junto a la lista; en pantallas menores, en un modal.
+const CONSULTA_ESCRITORIO = '(min-width: 1024px)'
+function useEsEscritorio(): boolean {
+  return useSyncExternalStore(
+    (avisar) => {
+      const m = window.matchMedia(CONSULTA_ESCRITORIO)
+      m.addEventListener('change', avisar)
+      return () => m.removeEventListener('change', avisar)
+    },
+    () => window.matchMedia(CONSULTA_ESCRITORIO).matches,
+    () => false,
+  )
+}
 
 const claseFoco = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-naranja'
 
@@ -55,14 +69,9 @@ function Dato({ titulo, children }: { titulo: string; children: React.ReactNode 
   )
 }
 
-// Detalle en un modal nativo. Las URLs firmadas se piden solo al abrir y caducan en 5 minutos.
-function DetalleReporte({ reporte, alCerrar }: { reporte: ReporteAutoridad; alCerrar: () => void }) {
-  const dialogo = useRef<HTMLDialogElement>(null)
+// Contenido del detalle. Las URLs firmadas se piden solo al abrir y caducan en 5 minutos.
+function ContenidoDetalle({ reporte, botonCerrar }: { reporte: ReporteAutoridad; botonCerrar?: React.ReactNode }) {
   const [fotos, setFotos] = useState<{ id: string; urls: string[]; error: string } | null>(null)
-
-  useEffect(() => {
-    dialogo.current?.showModal()
-  }, [])
 
   useEffect(() => {
     if (reporte.fotosPaths.length === 0) return
@@ -78,12 +87,7 @@ function DetalleReporte({ reporte, alCerrar }: { reporte: ReporteAutoridad; alCe
   const cargandoFotos = reporte.fotosPaths.length > 0 && fotos?.id !== reporte.id
 
   return (
-    <dialog
-      ref={dialogo}
-      onClose={alCerrar}
-      aria-labelledby="titulo-detalle"
-      className="m-auto max-h-[90dvh] w-[min(350px,calc(100%-24px))] overflow-y-auto overscroll-contain rounded-tarjeta bg-crema p-5 text-cafe shadow-tarjeta backdrop:overflow-hidden backdrop:overscroll-contain backdrop:bg-cafe/50"
-    >
+    <>
       <div className="flex items-start justify-between gap-2">
         <div>
           <h2 id="titulo-detalle" className="font-titulo text-lg font-bold">
@@ -96,14 +100,7 @@ function DetalleReporte({ reporte, alCerrar }: { reporte: ReporteAutoridad; alCe
             </span>
           </div>
         </div>
-        <button
-          type="button"
-          aria-label="Cerrar detalle"
-          onClick={() => dialogo.current?.close()}
-          className={`-mr-2 -mt-2 flex size-11 shrink-0 items-center justify-center rounded-full ${claseFoco}`}
-        >
-          <X aria-hidden="true" size={22} />
-        </button>
+        {botonCerrar}
       </div>
 
       <dl className="m-0 mt-4 flex flex-col gap-3">
@@ -169,6 +166,38 @@ function DetalleReporte({ reporte, alCerrar }: { reporte: ReporteAutoridad; alCe
           </ul>
         )}
       </section>
+    </>
+  )
+}
+
+// Detalle en un modal nativo (móvil y tableta).
+function DetalleModal({ reporte, alCerrar }: { reporte: ReporteAutoridad; alCerrar: () => void }) {
+  const dialogo = useRef<HTMLDialogElement>(null)
+
+  useEffect(() => {
+    dialogo.current?.showModal()
+  }, [])
+
+  return (
+    <dialog
+      ref={dialogo}
+      onClose={alCerrar}
+      aria-labelledby="titulo-detalle"
+      className="m-auto max-h-[90dvh] w-[min(350px,calc(100%-24px))] overflow-y-auto overscroll-contain rounded-tarjeta bg-crema p-5 text-cafe shadow-tarjeta backdrop:overflow-hidden backdrop:overscroll-contain backdrop:bg-cafe/50 md:w-[min(480px,calc(100%-48px))]"
+    >
+      <ContenidoDetalle
+        reporte={reporte}
+        botonCerrar={
+          <button
+            type="button"
+            aria-label="Cerrar detalle"
+            onClick={() => dialogo.current?.close()}
+            className={`-mr-2 -mt-2 flex size-11 shrink-0 items-center justify-center rounded-full ${claseFoco}`}
+          >
+            <X aria-hidden="true" size={22} />
+          </button>
+        }
+      />
     </dialog>
   )
 }
@@ -182,6 +211,7 @@ export default function PanelAutoridad() {
   const [errorMas, setErrorMas] = useState('')
   const [abierto, setAbierto] = useState<ReporteAutoridad | null>(null)
   const botonAbierto = useRef<HTMLElement | null>(null)
+  const escritorio = useEsEscritorio()
 
   // Primera página de cada filtro. La lista de otro filtro cuenta como "cargando".
   useEffect(() => {
@@ -219,9 +249,10 @@ export default function PanelAutoridad() {
   }
 
   return (
-    <div className="mx-auto min-h-dvh max-w-[390px] bg-crema">
+    <div className="min-h-dvh bg-crema">
       <Encabezado titulo="Autoridad" derecha={<PanelAjustes />} />
-      <main className="flex flex-col gap-4 px-5 pb-10 pt-[19px]">
+      <main className="mx-auto grid w-full max-w-[390px] gap-4 px-5 pb-10 pt-[19px] md:max-w-[720px] md:px-8 lg:max-w-[1120px] lg:grid-cols-[minmax(0,440px)_minmax(0,1fr)] lg:items-start lg:gap-8">
+        <div className="flex flex-col gap-4">
         <p className="flex items-center gap-2 text-[13px] text-cafe-suave">
           <Eye aria-hidden="true" size={18} className="shrink-0" />
           Solo lectura. Aquí llegan los reportes ciudadanos para que la autoridad les dé seguimiento.
@@ -265,12 +296,15 @@ export default function PanelAutoridad() {
               <li key={r.id}>
                 <button
                   type="button"
-                  aria-haspopup="dialog"
+                  aria-haspopup={escritorio ? undefined : 'dialog'}
+                  aria-pressed={escritorio ? abierto?.id === r.id : undefined}
                   onClick={(e) => {
                     botonAbierto.current = e.currentTarget
                     setAbierto(r)
                   }}
-                  className={`flex min-h-11 w-full items-center gap-3 rounded-tarjeta bg-white p-4 text-left shadow-tarjeta ${claseFoco}`}
+                  className={`flex min-h-11 w-full items-center gap-3 rounded-tarjeta p-4 text-left shadow-tarjeta ${claseFoco} ${
+                    escritorio && abierto?.id === r.id ? 'bg-celeste' : 'bg-white'
+                  }`}
                 >
                   <span className="flex min-w-0 flex-1 flex-col gap-1">
                     <span className="flex flex-wrap items-center gap-2">
@@ -305,9 +339,22 @@ export default function PanelAutoridad() {
             {cargandoMas ? 'Cargando…' : 'Ver más reportes'}
           </button>
         )}
+        </div>
+
+        {escritorio && (
+          <aside aria-label="Detalle del reporte" className="sticky top-4">
+            {abierto ? (
+              <Tarjeta className="max-h-[calc(100dvh-2rem)] overflow-y-auto p-5">
+                <ContenidoDetalle key={abierto.id} reporte={abierto} />
+              </Tarjeta>
+            ) : (
+              <Tarjeta className="p-5 text-sm text-cafe-suave">Elige un reporte de la lista para ver su detalle.</Tarjeta>
+            )}
+          </aside>
+        )}
       </main>
 
-      {abierto && <DetalleReporte key={abierto.id} reporte={abierto} alCerrar={cerrarDetalle} />}
+      {!escritorio && abierto && <DetalleModal key={abierto.id} reporte={abierto} alCerrar={cerrarDetalle} />}
     </div>
   )
 }

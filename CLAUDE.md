@@ -55,8 +55,11 @@ Prioridad media: campañas y mapa, adopción (pueden iniciar con datos de ejempl
 Cupones: pantalla navegable con datos de ejemplo; la lógica de canje y comisión queda para una fase posterior.
 Metas del piloto: 100 perros registrados, 2 comercios aliados, 1 reunión con el Instituto de Bienestar Animal.
 
+## Paso 12 (pulido, en curso)
+Sub-pasos 12a–12f en `docs/PLAN.md`: escritorio, imágenes, accesibilidad, PWA sin conexión, fotos huérfanas y privacidad. Decisiones: navegación superior en escritorio; imágenes de bancos gratuitos (Unsplash/Pexels) con atribución y letrero "Ejemplo"; sin caché de datos privados; el aviso de privacidad sigue en borrador hasta la revisión legal. Lo que queda después del prototipo está en "Lo que falta después del prototipo" de `docs/PLAN.md`.
+
 ## Cómo trabajar
-- Mobile-first, diseño base de **390 px** de ancho. Debe verse bien también en escritorio.
+- Mobile-first, diseño base de **390 px** de ancho. En escritorio (paso 12a) se adapta con `md` (768 px) y `lg` (1024 px): barra de navegación superior en `lg`, rejillas y paneles lado a lado. No rompas la vista de móvil. Prueba a 390, 768 y 1280 px.
 - Antes de empezar una pantalla, revisa `DESIGN.md` y reutiliza componentes (tarjeta, botón, encabezado, barra inferior, etiqueta de color).
 - Usa los skills instalados: `frontend-design` para la interfaz y `modern-web-guidance` para código web moderno y accesible.
 - Con `modern-web-guidance`: **no agregues scripts de terceros por CDN ni polyfills para navegadores viejos** a menos que sea necesario y lo avises.

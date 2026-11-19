@@ -5,7 +5,7 @@ export default function BarraInferior() {
   return (
     <nav
       aria-label="Navegación principal"
-      className="fixed inset-x-0 bottom-4 z-10 mx-auto w-full max-w-[390px] px-[14px] print:hidden"
+      className="fixed inset-x-0 bottom-4 z-10 mx-auto w-full max-w-[390px] px-[14px] lg:hidden print:hidden"
     >
       <ul className="m-0 flex h-[76px] list-none items-center justify-between rounded-barra border border-barra-borde bg-white px-3 shadow-barra">
         {rutas.map(({ path, etiqueta, icono: Icono }) => (

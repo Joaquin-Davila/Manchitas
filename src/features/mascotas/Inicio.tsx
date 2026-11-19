@@ -45,8 +45,8 @@ export default function Inicio() {
   )
 
   return (
-    <div className="flex flex-col gap-3">
-      <h2 className="-mb-2.5 font-titulo text-lg font-semibold">
+    <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6 lg:gap-y-4">
+      <h2 className="-mb-2.5 font-titulo text-lg font-semibold lg:col-span-2 lg:mb-0">
         ¡Hola, {sesion?.nombre ?? tutor.nombre}!
       </h2>
 
@@ -58,6 +58,7 @@ export default function Inicio() {
         </Tarjeta>
       ) : mascota ? (
         <>
+          <div className="flex flex-col gap-3">
           <Link
             to={`/mascotas/${mascota.id}`}
             className="block rounded-tarjeta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-naranja"
@@ -71,7 +72,9 @@ export default function Inicio() {
             <TarjetaDato etiqueta="Cupones" valor={cuponesVigentes(hoy).length} color="lima" />
             <TarjetaDato etiqueta="Estado" valor={estadoMascota} color="celeste" />
           </div>
+          </div>
 
+          <div className="flex flex-col gap-3">
           {proxima && cartilla?.recordatorio ? (
             <Link to="/salud" className={enlaceAviso}>
               <TarjetaAviso
@@ -96,6 +99,7 @@ export default function Inicio() {
           <BotonPrincipal to="/salud?tab=cupones" className="mt-1">
             Ver cupones y beneficios
           </BotonPrincipal>
+          </div>
         </>
       ) : (
         <>

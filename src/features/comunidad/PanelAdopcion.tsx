@@ -98,7 +98,7 @@ export default function PanelAdopcion() {
           )}
         </Tarjeta>
       ) : (
-        <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0">
+        <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 md:grid-cols-3 lg:grid-cols-4">
           {lista.map((a) => {
             const Icono = a.especie === 'gato' ? Cat : Dog
             return (
@@ -107,7 +107,7 @@ export default function PanelAdopcion() {
                   <div
                     role="img"
                     aria-label={`Foto pendiente de ${a.nombre}`}
-                    className="flex h-24 items-center justify-center bg-foto-vacia text-huella"
+                    className="flex h-24 items-center justify-center bg-foto-vacia md:h-32 text-huella"
                   >
                     <Icono aria-hidden="true" size={44} />
                   </div>

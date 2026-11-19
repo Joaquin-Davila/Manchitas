@@ -1,8 +1,13 @@
 import { Outlet, useLocation } from 'react-router-dom'
 import Encabezado from '../components/ui/Encabezado'
 import BarraInferior from '../components/ui/BarraInferior'
+import BarraSuperior from '../components/ui/BarraSuperior'
 import PanelAjustes from '../features/auth/PanelAjustes'
 import { rutas } from './rutas'
+
+// Pantallas con rejillas: usan todo el ancho en escritorio. Las demás se quedan en una columna
+// legible de 720 px.
+const ANCHAS = ['/', '/mascotas', '/comunidad']
 
 export default function Layout() {
   const { pathname } = useLocation()
@@ -10,14 +15,20 @@ export default function Layout() {
   const titulo =
     rutas.find((r) => (r.path === '/' ? pathname === '/' : pathname.startsWith(r.path)))?.titulo ??
     'Manchitas'
+  const ancha = ANCHAS.includes(pathname)
 
   return (
-    <div className="mx-auto min-h-dvh max-w-[390px] bg-crema">
+    <div className="min-h-dvh bg-crema">
       <div className="print:hidden">
-        <Encabezado titulo={titulo} derecha={<PanelAjustes />} />
+        <Encabezado titulo={titulo} navegacion={<BarraSuperior />} derecha={<PanelAjustes />} />
       </div>
-      {/* pb-32: espacio para que la barra flotante no tape el contenido */}
-      <main className="px-5 pb-32 pt-[19px] print:p-0">
+      {/* pb-32: espacio para que la barra flotante (solo móvil y tableta) no tape el contenido.
+          Al imprimir solo sale la etiqueta, con el ancho de siempre. */}
+      <main
+        className={`mx-auto w-full max-w-[390px] px-5 pb-32 pt-[19px] md:max-w-[720px] md:px-8 lg:pb-12 print:max-w-[390px]! print:p-0! ${
+          ancha ? 'lg:max-w-[1120px]' : ''
+        }`}
+      >
         <Outlet />
       </main>
       <BarraInferior />

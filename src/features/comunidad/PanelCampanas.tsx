@@ -83,9 +83,10 @@ export default function PanelCampanas() {
         {aliados.length === 1 ? '1 aliado' : `${aliados.length} aliados`}
       </p>
 
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[1.3fr_1fr] lg:items-start lg:gap-6">
       <section aria-label="Mapa de aliados" className="flex flex-col gap-2">
         {/* isolate: los paneles de Leaflet no deben quedar encima del encabezado ni de la barra inferior */}
-        <div className="isolate h-64 overflow-hidden rounded-tarjeta border-2 border-barra-borde shadow-tarjeta">
+        <div className="isolate h-64 overflow-hidden md:h-80 lg:h-[460px] rounded-tarjeta border-2 border-barra-borde shadow-tarjeta">
           <LimiteError respaldo={<p className={claseMapaVacio}>No pudimos cargar el mapa. Consulta la lista de aliados.</p>}>
             <Suspense fallback={<p className={claseMapaVacio}>Cargando mapa…</p>}>
               <MapaAliados aliados={aliados} />
@@ -97,6 +98,7 @@ export default function PanelCampanas() {
         </p>
       </section>
 
+      <div className="flex flex-col gap-4">
       <Desplegable titulo="Próximas campañas" cantidad={campanas.length}>
         {campanas.length === 0 ? (
           <Tarjeta className="flex flex-col gap-2 p-4 text-sm text-cafe-suave">
@@ -175,6 +177,8 @@ export default function PanelCampanas() {
           </ul>
         )}
       </Desplegable>
+      </div>
+      </div>
     </div>
   )
 }

@@ -86,3 +86,13 @@ Píldoras con fondo de color de apoyo, texto oscuro, 11–13 px. El filtro activ
 - Mantener los textos cortos y en español. Datos de ejemplo realistas.
 - Pantalla pública del QR: mismo estilo, sin la barra inferior (la ve un desconocido), sin la palabra "perdido".
 - Contraste mínimo 4.5:1 en texto y 44 px de área táctil.
+
+## Escritorio (paso 12a)
+El diseño de móvil (390 px) no cambia. Se adapta con dos puntos de quiebre de Tailwind: `md` (768 px) y `lg` (1024 px).
+- **Encabezado:** el fondo amarillo ocupa todo el ancho; su contenido se alinea con el del cuerpo (390 px en móvil, 720 px desde `md`, 1120 px desde `lg`).
+- **Navegación:** hasta 1023 px, la barra flotante inferior. Desde `lg`, una **barra superior** dentro del encabezado (Inicio, Mascotas, Comunidad, Salud, Avisos): píldoras con ícono y texto; la activa va en naranja con texto blanco. La barra inferior se oculta.
+- **Anchos del cuerpo:** una columna de 720 px para lectura y formularios. Las pantallas con rejillas (Inicio, Mascotas, Comunidad) usan hasta 1120 px desde `lg`.
+- **Rejillas:** Inicio en 2 columnas (mascota y datos a la izquierda; avisos y botón a la derecha); Mascotas en 2 y 3 columnas; Adopción en 3 y 4; Campañas con el mapa junto a las listas.
+- **Pantallas sin barra** (bienvenida, sesión, registro, QR público, reportes): tarjeta centrada de 480 px desde `md`, con esquinas de 32 px. La bienvenida se abre en dos columnas (foto y acciones) desde `lg`.
+- **Panel de autoridad:** desde `lg`, lista a la izquierda y detalle fijo a la derecha; en pantallas menores, el detalle va en un modal.
+- Las áreas táctiles de 44 px y el contraste de 4.5:1 aplican igual en escritorio.

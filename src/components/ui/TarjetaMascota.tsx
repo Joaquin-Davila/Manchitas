@@ -11,10 +11,10 @@ export default function TarjetaMascota({ nombre, folio, fotoUrl }: Props) {
         <img
           src={fotoUrl}
           alt={`Foto de ${nombre}`}
-          className="h-[150px] w-full object-cover"
+          className="h-[150px] w-full object-cover md:h-[220px]"
         />
       ) : (
-        <div className="flex h-[150px] items-center justify-center bg-foto-vacia text-huella">
+        <div className="flex h-[150px] md:h-[220px] items-center justify-center bg-foto-vacia text-huella">
           <Huella aria-hidden="true" size={64} relleno />
         </div>
       )}
