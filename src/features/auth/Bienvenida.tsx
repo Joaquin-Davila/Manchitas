@@ -53,10 +53,10 @@ export default function Bienvenida() {
       {/* 1-2. Logo y bienvenida */}
       <header className="order-1 flex flex-col items-center text-center">
         <div className="aparecer" style={retraso(0)}>
-          {/* Logo oficial (ya trae el nombre y el eslogan "Deja huella, mancha y protege."). */}
+          {/* Logo oficial (ya trae el nombre y el eslogan "Cuidamos cada paso de tu mejor amigo."). */}
           <img
             src="/logo-manchitas.png"
-            alt="Manchitas. Deja huella, mancha y protege."
+            alt="Manchitas. Cuidamos cada paso de tu mejor amigo."
             width={1024}
             height={765}
             className="flotar -my-3 h-auto w-44 mix-blend-multiply md:w-52 lg:-my-4 lg:w-56"

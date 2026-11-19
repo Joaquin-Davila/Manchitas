@@ -3,7 +3,7 @@
 Lee este archivo y `DESIGN.md` antes de escribir código. Todo el texto visible para el usuario va **en español de México**.
 
 ## Qué es
-Manchitas es una PWA comunitaria de tenencia responsable de mascotas para **Hermosillo, Sonora**. Identifica a cada perro con un ID de collar y un QR, conecta a tutores, veterinarias, comercios, rescatistas y autoridades, y facilita la vacunación, la adopción y la denuncia de maltrato. Eslogan: "Deja huella, mancha y protege."
+Manchitas es una PWA comunitaria de tenencia responsable de mascotas para **Hermosillo, Sonora**. Identifica a cada perro con un ID de collar y un QR, conecta a tutores, veterinarias, comercios, rescatistas y autoridades, y facilita la vacunación, la adopción y la denuncia de maltrato. Eslogan: "Cuidamos cada paso de tu mejor amigo." (el de la metodología del certamen; el logo con ese texto está en `public/logo-manchitas.png`)
 
 Es un **emprendimiento social** del equipo 2ISI (Universidad de Sonora) para el Certamen Búho Innova-T 2026, categoría Emprendimiento Social. El producto es un cambio de conducta social; la tecnología es el medio.
 
