@@ -1,5 +1,6 @@
-import { LogOut, Settings, X } from 'lucide-react'
+import { LogOut, Settings, ShieldCheck, X } from 'lucide-react'
 import { useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import BotonSecundario from '../../components/ui/BotonSecundario'
 import { useSesion } from './contextoSesion'
 
@@ -7,6 +8,7 @@ import { useSesion } from './contextoSesion'
 export default function PanelAjustes() {
   const dialogo = useRef<HTMLDialogElement>(null)
   const { sesion, cerrarSesion } = useSesion()
+  const { pathname } = useLocation()
 
   function salir() {
     dialogo.current?.close()
@@ -50,7 +52,14 @@ export default function PanelAjustes() {
             Sesión iniciada con {sesion.correo}
           </p>
         )}
-        <BotonSecundario onClick={salir} className="mt-5 gap-2">
+        {/* Solo se ofrece a quien tiene el rol; no es parte de la navegación de los tutores. */}
+        {sesion?.rol === 'autoridad' && pathname !== '/autoridad' && (
+          <BotonSecundario to="/autoridad" onClick={() => dialogo.current?.close()} className="mt-5 gap-2">
+            <ShieldCheck aria-hidden="true" size={20} />
+            Panel de autoridad
+          </BotonSecundario>
+        )}
+        <BotonSecundario onClick={salir} className="mt-3 gap-2">
           <LogOut aria-hidden="true" size={20} />
           Cerrar sesión
         </BotonSecundario>

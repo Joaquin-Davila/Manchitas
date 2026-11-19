@@ -68,14 +68,20 @@ export default function ProveedorSesionSupabase({ children }: { children: ReactN
     }
     clienteRemoto()
       .from('perfiles')
-      .select('nombre, apellido, telefono')
+      .select('nombre, apellido, telefono, rol')
       .eq('id', idUsuario)
       .maybeSingle()
       .then(({ data }) => {
         if (!vigente) return
         setPerfil(
           data
-            ? { ...respaldo, nombre: data.nombre, apellido: data.apellido ?? '', telefono: data.telefono ?? undefined }
+            ? {
+                ...respaldo,
+                nombre: data.nombre,
+                apellido: data.apellido ?? '',
+                telefono: data.telefono ?? undefined,
+                rol: data.rol === 'autoridad' ? 'autoridad' : 'tutor',
+              }
             : respaldo,
         )
       })

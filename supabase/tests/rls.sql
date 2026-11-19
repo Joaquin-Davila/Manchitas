@@ -190,6 +190,29 @@ begin
   res := res || pg_temp.fila('una autoridad no puede editar reportes (solo lectura)',
     pg_temp.como('authenticated', a, $q$ with u as (update public.reportes set estado = 'canalizado'
       returning 1) select count(*) from u $q$) in ('0', 'ERROR:42501'));
+  insert into public.vacunas (mascota_id, nombre, fecha) values (mb, 'Rabia', current_date);
+  res := res || pg_temp.fila('una autoridad solo ve su propio perfil (no el de los tutores)',
+    pg_temp.como('authenticated', a, 'select count(*) from public.perfiles') = '1');
+  res := res || pg_temp.fila('una autoridad NO ve cartillas ni vacunas de otros tutores',
+    pg_temp.como('authenticated', a, format('select count(*) from public.cartillas where mascota_id = %L', mb)) = '0'
+    and pg_temp.como('authenticated', a, format('select count(*) from public.vacunas where mascota_id = %L', mb)) = '0');
+  res := res || pg_temp.fila('una autoridad no puede insertar ni borrar reportes',
+    pg_temp.como('authenticated', a, $q$ with i as (insert into public.reportes (tipo, descripcion, fecha_hechos)
+      values ('otro', 'x', current_date) returning 1) select count(*) from i $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', a, $q$ with d as (delete from public.reportes returning 1)
+      select count(*) from d $q$) = 'ERROR:42501');
+  res := res || pg_temp.fila('una autoridad no puede cambiar el rol de otro perfil',
+    pg_temp.como('authenticated', a, format($q$ with u as (update public.perfiles set rol = 'autoridad'
+      where id = %L returning 1) select count(*) from u $q$, b)) in ('0', 'ERROR:42501'));
+  res := res || pg_temp.fila('una autoridad no puede subir ni borrar evidencia (solo la lee)',
+    pg_temp.como('authenticated', a, $q$ with i as (insert into storage.objects (bucket_id, name)
+      values ('reportes-evidencia', 'x/1.jpg') returning 1) select count(*) from i $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', a, $q$ with d as (delete from storage.objects
+      where bucket_id = 'reportes-evidencia' returning 1) select count(*) from d $q$) in ('0', 'ERROR:42501'));
+  res := res || pg_temp.fila('un tutor sin rol sigue sin ver reportes ni evidencia',
+    pg_temp.como('authenticated', b, 'select count(*) from public.reportes') = '0'
+    and pg_temp.como('authenticated', b, $q$ select count(*) from storage.objects
+      where bucket_id = 'reportes-evidencia' $q$) = '0');
 
   -- Resultado: el error revierte todo lo creado arriba.
   -- Resumen corto (el CLI recorta mensajes largos): cuántas pasaron y, completas, las que fallaron.

@@ -5,6 +5,8 @@ import LayoutAuth from '../features/auth/LayoutAuth'
 import Privacidad from '../features/auth/Privacidad'
 import Registro from '../features/auth/Registro'
 import RutaProtegida from '../features/auth/RutaProtegida'
+import PanelAutoridad from '../features/autoridad/PanelAutoridad'
+import RutaAutoridad from '../features/autoridad/RutaAutoridad'
 import Comunidad from '../features/comunidad/Comunidad'
 import BuscarPorId from '../features/publico/BuscarPorId'
 import PerfilPublico from '../features/publico/PerfilPublico'
@@ -42,6 +44,10 @@ export default function App() {
       </Route>
 
       <Route element={<RutaProtegida />}>
+        {/* Panel de autoridad: sin barra inferior y fuera de rutas.tsx (no aparece en la navegación). */}
+        <Route element={<RutaAutoridad />}>
+          <Route path="autoridad" element={<PanelAutoridad />} />
+        </Route>
         <Route element={<Layout />}>
           <Route index element={<Inicio />} />
           <Route path="mascotas" element={<ListaMascotas />} />

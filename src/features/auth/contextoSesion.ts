@@ -8,6 +8,8 @@ export type Sesion = {
   correo: string
   /** 10 dígitos de WhatsApp; las cuentas anteriores a este campo no lo tienen. */
   telefono?: string
+  /** Solo Supabase lo trae. Sin él (modo local) se trata como tutor. El servidor decide qué puede leer cada rol. */
+  rol?: 'tutor' | 'autoridad'
 }
 
 export type ValorSesion = {
