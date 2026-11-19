@@ -18,10 +18,11 @@ No uses esta contraseña para nada más. Para cambiarla, edita `VITE_DEMO_PASSWO
 
 - 9 mascotas: 4 perros (Pony, Chapito, Lupe, Emo) y 5 gatos (Coco, Cenizas, Félix, Oreo, Luna), con folio y QR, cartilla y vacunas con estados distintos (próximas, una vencida y una lejana). Los años de nacimiento de Coco, Pony, Chapito, Lupe, Emo y Félix son aproximados; raza y señas de las 9, y la edad de Cenizas, Oreo y Luna, son provisionales hasta confirmar los datos reales.
 - Las fotos van en `supabase/seed/fotos/` como `coco.jpg`, `pony.jpg`, `chapito.jpg`, `lupe.jpg`, `emo.jpg`, `cenizas.jpg`, `felix.jpg`, `oreo.jpg` y `luna.jpg` (JPEG, máx. 2 MB). Sin archivo, la mascota se muestra sin foto.
-- 10 establecimientos, 4 anuncios patrocinados, 5 campañas, 8 adopciones y 12 publicaciones de la comunidad.
+- 10 establecimientos, 4 anuncios patrocinados, 10 promociones, 20 reseñas (10 verificadas y 10 no; 5 con respuesta del establecimiento), 5 campañas, 8 adopciones y 12 publicaciones de la comunidad.
+- Manchitas Solidario: 3 campañas publicadas con avance distinto (18 %, 62 % y 91 %), su desglose de gastos, actualizaciones y aportaciones **de demostración** (confirmadas, y una pendiente, una fallida y una reembolsada), más una campaña de la cuenta demo en revisión. **Ningún pago es real**: no hay pasarela y lo que se aporta desde la app queda pendiente y no suma al avance.
 - Todo lo ficticio lleva `es_demo = true` y la interfaz lo rotula "Ejemplo". **No son certificados veterinarios, establecimientos reales ni personas reales.**
 
-Pendiente en los bloques siguientes: reseñas, donaciones, chat, notificaciones, extraviadas y foros.
+Pendiente en los bloques siguientes: chat, notificaciones, extraviadas y foros.
 
 ## Crear o restablecer la cuenta y los datos
 
@@ -50,3 +51,21 @@ Las variables `VITE_DEMO_EMAIL` y `VITE_DEMO_PASSWORD` deben existir también en
 ## Separación entre demo y datos reales
 
 Las filas de demostración están en las mismas tablas que las reales, marcadas con `es_demo = true`. Todas las personas con sesión las ven (decisión del equipo). Cuando haya usuarios reales de verdad, se pueden ocultar o borrar con una sola consulta (`delete from ... where es_demo`), o filtrar en las políticas de lectura.
+
+## Moderación y propietarios (administración)
+
+Estas operaciones se hacen a mano con SQL, igual que el rol de autoridad (ver `PLAN.md`). Con el CLI vinculado y tu confirmación (`--yes`):
+
+```
+-- Publicar (o rechazar) una campaña en revisión
+npx supabase db query --remote --yes "update public.colectas set estado = 'publicada', publicada_en = now() where id = '<id>'"
+npx supabase db query --remote --yes "update public.colectas set estado = 'rechazada', motivo_rechazo = '<motivo>' where id = '<id>'"
+
+-- Dar el rol de moderador (puede llamar a moderar_colecta y verificar_resena desde la app)
+npx supabase db query --remote --yes "update public.perfiles set rol = 'moderador' where id = (select id from auth.users where email = '<correo>')"
+
+-- Hacer propietaria de un establecimiento a una persona (puede publicar promociones y responder reseñas)
+npx supabase db query --remote --yes "update public.establecimientos set propietario_id = (select id from auth.users where email = '<correo>') where id = '<id>'"
+```
+
+La campaña "Un hogar temporal para gatitos rescatados" de la cuenta demo queda en revisión a propósito, para mostrar ese estado.

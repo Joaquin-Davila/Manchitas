@@ -50,14 +50,14 @@ function TarjetaAnuncio({ anuncio, hoy }: { anuncio: Anuncio; hoy: string }) {
         </p>
         <div className="flex flex-wrap gap-2 pt-1">
           <Link
-            to="/comunidad"
+            to={`/comunidad/veterinarias/${e.id}`}
             className={`inline-flex min-h-11 items-center gap-1.5 rounded-full bg-naranja px-4 text-sm font-semibold text-white ${clasesFoco}`}
           >
             Ver perfil
             <ArrowRight aria-hidden="true" size={16} />
           </Link>
           <Link
-            to="/salud"
+            to={`/comunidad/veterinarias/${e.id}#titulo-promos`}
             className={`inline-flex min-h-11 items-center rounded-full border border-borde-calido bg-white px-4 text-sm font-semibold text-cafe hover:bg-crema-clara ${clasesFoco}`}
           >
             Consultar promoción

@@ -4,13 +4,13 @@ import { hoyISO } from '../../lib/edad'
 import { useSesion } from '../auth/contextoSesion'
 import { useCartilla } from '../salud/useCartilla'
 import ActividadComunitaria from './inicio/ActividadComunitaria'
-import Aliados from './inicio/Aliados'
 import CadaHuella from './inicio/CadaHuella'
 import ComunidadCerca from './inicio/ComunidadCerca'
 import Descubre from './inicio/Descubre'
 import { HeroCargando, HeroMascota, HeroSinMascota } from './inicio/HeroMascota'
 import Indicadores from './inicio/Indicadores'
 import Patrocinado from './inicio/Patrocinado'
+import PromocionesYAliados from './inicio/PromocionesYAliados'
 import ResumenSalud from './inicio/ResumenSalud'
 import { useInicioComunidad } from './inicio/useInicioComunidad'
 import { Aparecer, clasesTarjeta } from './inicio/comun'
@@ -100,9 +100,9 @@ export default function Inicio() {
         </Aparecer>
       )}
 
+      {/* Promociones y aliados mejor calificados: salen del directorio de Supabase. */}
       <Aparecer retraso={380}>
-        {/* Sin directorio real todavía: se muestra el estado de descubrimiento. */}
-        <Aliados />
+        <PromocionesYAliados />
       </Aparecer>
 
       <Aparecer retraso={440}>

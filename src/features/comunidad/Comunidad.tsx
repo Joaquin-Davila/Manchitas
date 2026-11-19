@@ -1,19 +1,27 @@
-import { CalendarHeart, Heart, MapPin } from 'lucide-react'
+import { CalendarHeart, HandHeart, Heart, MapPin, Stethoscope } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import Huella from '../../components/ui/Huella'
 import Pestanas from '../../components/ui/Pestanas'
 import { Aparecer } from '../mascotas/inicio/comun'
+import ListaSolidario from '../solidario/ListaSolidario'
+import ListaVeterinarias from '../veterinarias/ListaVeterinarias'
 import PanelAdopcion from './PanelAdopcion'
 import PanelCampanas from './PanelCampanas'
 
+// En móvil los íconos se ocultan: con 4 pestañas solo cabe el texto.
+const icono = (I: typeof Heart) => <I aria-hidden="true" size={18} className="hidden sm:block" />
 const PESTANAS = [
-  { id: 'campanas', etiqueta: 'Campañas', icono: <CalendarHeart aria-hidden="true" size={18} /> },
-  { id: 'adopcion', etiqueta: 'Adopción', icono: <Heart aria-hidden="true" size={18} /> },
+  { id: 'campanas', etiqueta: 'Campañas', icono: icono(CalendarHeart) },
+  { id: 'adopcion', etiqueta: 'Adopción', icono: icono(Heart) },
+  { id: 'veterinarias', etiqueta: 'Veterinarias', icono: icono(Stethoscope) },
+  { id: 'solidario', etiqueta: 'Solidario', icono: icono(HandHeart) },
 ]
+const IDS = PESTANAS.map((p) => p.id)
 
 export default function Comunidad() {
   const [params, setParams] = useSearchParams()
-  const activa = params.get('tab') === 'adopcion' ? 'adopcion' : 'campanas'
+  const pedida = params.get('tab') ?? ''
+  const activa = IDS.includes(pedida) ? pedida : 'campanas'
 
   function cambiar(id: string) {
     setParams(id === 'campanas' ? {} : { tab: id }, { replace: true })
@@ -44,12 +52,20 @@ export default function Comunidad() {
         </p>
       </Aparecer>
 
-      <div className="md:max-w-md">
+      <div className="md:max-w-2xl">
         <Pestanas pestanas={PESTANAS} activa={activa} onCambiar={cambiar} etiqueta="Comunidad" base="comunidad" />
       </div>
 
       <div id={`comunidad-panel-${activa}`} role="tabpanel" aria-labelledby={`comunidad-tab-${activa}`}>
-        {activa === 'adopcion' ? <PanelAdopcion /> : <PanelCampanas />}
+        {activa === 'adopcion' ? (
+          <PanelAdopcion />
+        ) : activa === 'veterinarias' ? (
+          <ListaVeterinarias />
+        ) : activa === 'solidario' ? (
+          <ListaSolidario />
+        ) : (
+          <PanelCampanas />
+        )}
       </div>
     </div>
   )

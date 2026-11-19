@@ -276,6 +276,169 @@ begin
     (select tipo_usuario = 'rescatista' and ciudad = 'Hermosillo' and colonia = ''
        from public.perfiles where id = '00000000-0000-4000-8000-0000000000d1'));
 
+  -- Bloque B: reseñas, promociones, colectas y aportaciones -------------------------------------
+  insert into public.establecimientos (id, nombre, tipo, propietario_id)
+    values ('00000000-0000-4000-8000-0000000000e2', 'RLS-vet-b', 'veterinaria', b);
+  create temp table _b (k text primary key, val text);
+
+  -- Reseñas
+  v := pg_temp.como('authenticated', a, $q$ with i as (insert into public.resenas (establecimiento_id, puntuacion, comentario)
+        values ('00000000-0000-4000-8000-0000000000e1', 4, 'Buen servicio') returning 1) select count(*) from i $q$);
+  res := res || pg_temp.fila('una persona con sesión puede reseñar un establecimiento', v = '1');
+  res := res || pg_temp.fila('la reseña sale con autor y nombre fijados por el servidor, sin verificar y sin respuesta',
+    (select autor_id = a and autor_nombre like 'Ana%' and not verificada and respuesta is null and not es_demo
+       from public.resenas where establecimiento_id = '00000000-0000-4000-8000-0000000000e1' and autor_id = a));
+  res := res || pg_temp.fila('una persona no puede reseñar dos veces el mismo establecimiento',
+    pg_temp.como('authenticated', a, $q$ with i as (insert into public.resenas (establecimiento_id, puntuacion)
+      values ('00000000-0000-4000-8000-0000000000e1', 5) returning 1) select count(*) from i $q$) = 'ERROR:23505');
+  res := res || pg_temp.fila('la puntuación debe ser de 1 a 5',
+    pg_temp.como('authenticated', b, $q$ with i as (insert into public.resenas (establecimiento_id, puntuacion)
+      values ('00000000-0000-4000-8000-0000000000e1', 9) returning 1) select count(*) from i $q$) = 'ERROR:23514');
+  res := res || pg_temp.fila('el autor no puede marcar su reseña como verificada ni escribir la respuesta',
+    pg_temp.como('authenticated', b, $q$ with i as (insert into public.resenas (establecimiento_id, puntuacion, verificada)
+      values ('00000000-0000-4000-8000-0000000000e1', 5, true) returning 1) select count(*) from i $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', a, $q$ with u as (update public.resenas set verificada = true where autor_id = (select auth.uid())
+      returning 1) select count(*) from u $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', a, $q$ with u as (update public.resenas set respuesta = 'x' where autor_id = (select auth.uid())
+      returning 1) select count(*) from u $q$) = 'ERROR:42501');
+  v := pg_temp.como('authenticated', a, $q$ with u as (update public.resenas set puntuacion = 5 where autor_id = (select auth.uid())
+      returning 1) select count(*) from u $q$);
+  res := res || pg_temp.fila('el autor puede editar su reseña y queda marcada como editada',
+    v = '1' and (select editada_en is not null and puntuacion = 5 from public.resenas where autor_id = a and establecimiento_id = '00000000-0000-4000-8000-0000000000e1'));
+  res := res || pg_temp.fila('nadie más puede editar ni borrar la reseña de otra persona',
+    pg_temp.como('authenticated', b, format($q$ with u as (update public.resenas set puntuacion = 1 where autor_id = %L returning 1)
+      select count(*) from u $q$, a)) = '0'
+    and pg_temp.como('authenticated', b, format($q$ with d as (delete from public.resenas where autor_id = %L returning 1)
+      select count(*) from d $q$, a)) = '0');
+  perform set_config('request.jwt.claims', '', true);  -- vuelve a ser administración: sin usuario simulado
+  insert into public.resenas (id, establecimiento_id, autor_nombre, puntuacion, es_demo)
+    values ('00000000-0000-4000-8000-0000000000f1', '00000000-0000-4000-8000-0000000000e2', 'Cliente', 3, true);
+  v := pg_temp.como('authenticated', a, $q$ with x as (select public.responder_resena('00000000-0000-4000-8000-0000000000f1', 'Gracias')) select 'ok' from x $q$);
+  insert into _b values ('resp_ajena', v);
+  v := pg_temp.como('authenticated', b, $q$ with x as (select public.responder_resena('00000000-0000-4000-8000-0000000000f1', 'Gracias por venir')) select 'ok' from x $q$);
+  res := res || pg_temp.fila('solo el dueño del establecimiento responde una reseña (otra persona no)',
+    (select val from _b where k = 'resp_ajena') = 'ERROR:42501' and v = 'ok'
+    and (select respuesta = 'Gracias por venir' and respuesta_en is not null from public.resenas where id = '00000000-0000-4000-8000-0000000000f1'));
+  res := res || pg_temp.fila('un dueño no puede responder reseñas de otro establecimiento',
+    pg_temp.como('authenticated', b, format($q$ with x as (select public.responder_resena(%L, 'x')) select 'ok' from x $q$,
+      (select id from public.resenas where autor_id = a limit 1))) = 'ERROR:42501');
+  update public.perfiles set rol = 'moderador' where id = '00000000-0000-4000-8000-0000000000d1';
+  v := pg_temp.como('authenticated', b, $q$ with x as (select public.verificar_resena('00000000-0000-4000-8000-0000000000f1', true)) select 'ok' from x $q$);
+  insert into _b values ('verif_dueno', v);
+  v := pg_temp.como('authenticated', '00000000-0000-4000-8000-0000000000d1', $q$ with x as (select public.verificar_resena('00000000-0000-4000-8000-0000000000f1', true)) select 'ok' from x $q$);
+  res := res || pg_temp.fila('solo un moderador verifica reseñas',
+    (select val from _b where k = 'verif_dueno') = 'ERROR:42501' and v = 'ok'
+    and (select verificada from public.resenas where id = '00000000-0000-4000-8000-0000000000f1'));
+  res := res || pg_temp.fila('anon no lee reseñas ni ejecuta funciones de moderación',
+    pg_temp.como('anon', null, 'select count(*) from public.resenas') = 'ERROR:42501'
+    and pg_temp.como('anon', null, 'select public.es_moderador()::text') = 'ERROR:42501');
+  res := res || pg_temp.fila('el resumen de calificaciones cuenta las reseñas',
+    pg_temp.como('authenticated', b, $q$ select total_resenas::text from public.establecimientos_resumen where id = '00000000-0000-4000-8000-0000000000e1' $q$) = '1');
+
+  -- Promociones y edición del establecimiento
+  res := res || pg_temp.fila('el dueño publica promociones de su establecimiento',
+    pg_temp.como('authenticated', b, $q$ with i as (insert into public.promociones (establecimiento_id, titulo, vigente_hasta)
+      values ('00000000-0000-4000-8000-0000000000e2', 'Promo propia', current_date + 5) returning 1) select count(*) from i $q$) = '1');
+  res := res || pg_temp.fila('nadie publica promociones en nombre de otro establecimiento',
+    pg_temp.como('authenticated', b, $q$ with i as (insert into public.promociones (establecimiento_id, titulo, vigente_hasta)
+      values ('00000000-0000-4000-8000-0000000000e1', 'Promo ajena', current_date + 5) returning 1) select count(*) from i $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', a, $q$ with i as (insert into public.promociones (establecimiento_id, titulo, vigente_hasta)
+      values ('00000000-0000-4000-8000-0000000000e2', 'Promo ajena', current_date + 5) returning 1) select count(*) from i $q$) = 'ERROR:42501');
+  res := res || pg_temp.fila('nadie edita ni borra promociones ajenas',
+    pg_temp.como('authenticated', a, $q$ with u as (update public.promociones set titulo = 'X' returning 1) select count(*) from u $q$) = '0'
+    and pg_temp.como('authenticated', a, $q$ with d as (delete from public.promociones returning 1) select count(*) from d $q$) = '0');
+  perform set_config('request.jwt.claims', '', true);  -- vuelve a ser administración: sin usuario simulado
+  insert into public.promociones (establecimiento_id, titulo, vigente_desde, vigente_hasta, activa) values
+    ('00000000-0000-4000-8000-0000000000e2', 'RLS-vencida', current_date - 10, current_date - 1, true);
+  res := res || pg_temp.fila('las promociones vencidas solo las ve su dueño',
+    pg_temp.como('authenticated', a, $q$ select count(*) from public.promociones where titulo = 'RLS-vencida' $q$) = '0'
+    and pg_temp.como('authenticated', b, $q$ select count(*) from public.promociones where titulo = 'RLS-vencida' $q$) = '1');
+  res := res || pg_temp.fila('el dueño edita su establecimiento, pero no el de otro ni su nombre/propietario',
+    pg_temp.como('authenticated', b, $q$ with u as (update public.establecimientos set descripcion = 'Nueva'
+      where id = '00000000-0000-4000-8000-0000000000e2' returning 1) select count(*) from u $q$) = '1'
+    and pg_temp.como('authenticated', b, $q$ with u as (update public.establecimientos set descripcion = 'X'
+      where id = '00000000-0000-4000-8000-0000000000e1' returning 1) select count(*) from u $q$) = '0'
+    and pg_temp.como('authenticated', b, $q$ with u as (update public.establecimientos set nombre = 'Otro'
+      where id = '00000000-0000-4000-8000-0000000000e2' returning 1) select count(*) from u $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', b, format($q$ with u as (update public.establecimientos set propietario_id = %L
+      where id = '00000000-0000-4000-8000-0000000000e2' returning 1) select count(*) from u $q$, a)) = 'ERROR:42501');
+
+  -- Colectas (Manchitas Solidario)
+  v := pg_temp.como('authenticated', a, $q$ select public.crear_colecta('{"titulo":"RLS campaña de prueba","resumen":"x",
+    "historia":"Historia de prueba con más de veinte caracteres","beneficiario_tipo":"mascota","beneficiario_nombre":"Tobi",
+    "meta_mxn":1000,"fecha_fin":"2099-01-01","foto_principal":"","fotos":[],
+    "gastos":[{"concepto":"A","monto_mxn":600},{"concepto":"B","monto_mxn":400}]}'::jsonb)::text $q$);
+  insert into _b values ('col', v);
+  res := res || pg_temp.fila('crear una colecta devuelve su id y nace en revisión con el organizador de la sesión',
+    (select estado = 'en_revision' and organizador_id = a and organizador_nombre like 'Ana%' and not es_demo
+       from public.colectas where id = (select val::uuid from _b where k = 'col')));
+  res := res || pg_temp.fila('el desglose debe sumar exactamente la meta',
+    pg_temp.como('authenticated', a, $q$ select public.crear_colecta('{"titulo":"RLS desglose mal","historia":"Historia de prueba con más de veinte caracteres",
+      "beneficiario_tipo":"mascota","beneficiario_nombre":"X","meta_mxn":1000,"fecha_fin":"2099-01-01",
+      "gastos":[{"concepto":"A","monto_mxn":900}]}'::jsonb)::text $q$) = 'ERROR:P0001');
+  res := res || pg_temp.fila('anon no puede crear colectas ni aportar',
+    pg_temp.como('anon', null, $q$ select public.crear_colecta('{}'::jsonb)::text $q$) = 'ERROR:42501'
+    and pg_temp.como('anon', null, 'select count(*) from public.colectas') = 'ERROR:42501');
+  res := res || pg_temp.fila('el cliente no puede insertar colectas, gastos ni aportaciones directamente',
+    pg_temp.como('authenticated', b, $q$ with i as (insert into public.colectas (organizador_nombre, titulo, historia, beneficiario_tipo,
+      beneficiario_nombre, meta_mxn, fecha_fin) values ('X', 'Titulo largo', 'Historia de prueba con más de veinte caracteres', 'mascota', 'X', 1000,
+      current_date + 5) returning 1) select count(*) from i $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', b, $q$ with i as (insert into public.aportaciones (colecta_id, donante_nombre, monto_mxn, estado)
+      values (gen_random_uuid(), 'X', 100, 'confirmada') returning 1) select count(*) from i $q$) = 'ERROR:42501');
+  res := res || pg_temp.fila('una colecta en revisión solo la ven su organizador y un moderador',
+    pg_temp.como('authenticated', a, format('select count(*) from public.colectas where id = %L', (select val from _b where k = 'col'))) = '1'
+    and pg_temp.como('authenticated', b, format('select count(*) from public.colectas where id = %L', (select val from _b where k = 'col'))) = '0'
+    and pg_temp.como('authenticated', '00000000-0000-4000-8000-0000000000d1', format('select count(*) from public.colectas where id = %L', (select val from _b where k = 'col'))) = '1');
+  res := res || pg_temp.fila('no se puede aportar a una colecta que no está publicada',
+    pg_temp.como('authenticated', b, format($q$ select public.registrar_aportacion(%L, 100, '', false)::text $q$, (select val from _b where k = 'col'))) = 'ERROR:P0001');
+  v := pg_temp.como('authenticated', b, format($q$ with x as (select public.moderar_colecta(%L, 'publicada')) select 'ok' from x $q$, (select val from _b where k = 'col')));
+  insert into _b values ('mod_b', v);
+  v := pg_temp.como('authenticated', a, format($q$ with x as (select public.moderar_colecta(%L, 'publicada')) select 'ok' from x $q$, (select val from _b where k = 'col')));
+  insert into _b values ('mod_a', v);
+  v := pg_temp.como('authenticated', '00000000-0000-4000-8000-0000000000d1', format($q$ with x as (select public.moderar_colecta(%L, 'publicada')) select 'ok' from x $q$, (select val from _b where k = 'col')));
+  res := res || pg_temp.fila('solo un moderador publica o rechaza colectas',
+    (select val from _b where k = 'mod_b') = 'ERROR:42501' and (select val from _b where k = 'mod_a') = 'ERROR:42501' and v = 'ok'
+    and (select estado = 'publicada' and publicada_en is not null from public.colectas where id = (select val::uuid from _b where k = 'col')));
+  res := res || pg_temp.fila('una colecta publicada la ve cualquier persona con sesión',
+    pg_temp.como('authenticated', b, format('select count(*) from public.colectas where id = %L', (select val from _b where k = 'col'))) = '1');
+  v := pg_temp.como('authenticated', b, format($q$ select public.registrar_aportacion(%L, 500, 'Ánimo', false)::text $q$, (select val from _b where k = 'col')));
+  res := res || pg_temp.fila('aportar crea una aportación PENDIENTE y SIMULADA, con el nombre fijado por el servidor',
+    coalesce(v, '') ~ '^[0-9a-f-]{36}$'
+    and (select estado = 'pendiente' and simulada and monto_mxn = 500 and donante_id = b and donante_nombre like 'Beto%'
+           from public.aportaciones where colecta_id = (select val::uuid from _b where k = 'col') and donante_id = b and not anonima));
+  res := res || pg_temp.fila('una aportación pendiente NO suma a lo recaudado',
+    (select recaudado_mxn = 0 and donantes = 0 from public.colectas_resumen where id = (select val::uuid from _b where k = 'col')));
+  res := res || pg_temp.fila('el monto de una aportación debe estar entre $10 y $100,000',
+    pg_temp.como('authenticated', b, format($q$ select public.registrar_aportacion(%L, 5, '', false)::text $q$, (select val from _b where k = 'col'))) = 'ERROR:23514');
+  v := pg_temp.como('authenticated', b, format($q$ select public.registrar_aportacion(%L, 100, '', true)::text $q$, (select val from _b where k = 'col')));
+  res := res || pg_temp.fila('una aportación anónima oculta el nombre',
+    coalesce(v, '') ~ '^[0-9a-f-]{36}$'
+    and exists (select 1 from public.aportaciones where donante_id = b and anonima and donante_nombre = 'Anónimo'));
+  res := res || pg_temp.fila('las aportaciones no confirmadas solo las ven su autor y el organizador',
+    pg_temp.como('authenticated', '00000000-0000-4000-8000-0000000000c1', format('select count(*) from public.aportaciones where colecta_id = %L', (select val from _b where k = 'col'))) = '0'
+    and pg_temp.como('authenticated', a, format('select count(*) from public.aportaciones where colecta_id = %L', (select val from _b where k = 'col'))) = '2'
+    and pg_temp.como('authenticated', b, format('select count(*) from public.aportaciones where colecta_id = %L', (select val from _b where k = 'col'))) = '2');
+  res := res || pg_temp.fila('nadie puede cambiar el estado ni el monto de una aportación ni borrarla',
+    pg_temp.como('authenticated', b, $q$ with u as (update public.aportaciones set estado = 'confirmada', monto_mxn = 99999 returning 1) select count(*) from u $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', b, $q$ with d as (delete from public.aportaciones returning 1) select count(*) from d $q$) = 'ERROR:42501');
+  perform set_config('request.jwt.claims', '', true);  -- vuelve a ser administración: sin usuario simulado
+  insert into public.aportaciones (colecta_id, donante_nombre, monto_mxn, estado, simulada, es_demo)
+    values ((select val::uuid from _b where k = 'col'), 'Demo', 300, 'confirmada', true, true);
+  res := res || pg_temp.fila('solo las aportaciones confirmadas suman a lo recaudado y las ve todo el mundo',
+    (select recaudado_mxn = 300 and donantes = 1 from public.colectas_resumen where id = (select val::uuid from _b where k = 'col'))
+    and pg_temp.como('authenticated', '00000000-0000-4000-8000-0000000000c1', format('select count(*) from public.aportaciones where colecta_id = %L', (select val from _b where k = 'col'))) = '1');
+  res := res || pg_temp.fila('solo el organizador publica actualizaciones de su colecta publicada',
+    pg_temp.como('authenticated', b, format($q$ select public.publicar_actualizacion(%L, 'Hola', 'Texto')::text $q$, (select val from _b where k = 'col'))) = 'ERROR:42501'
+    and coalesce(pg_temp.como('authenticated', a, format($q$ select public.publicar_actualizacion(%L, 'Hola', 'Texto')::text $q$, (select val from _b where k = 'col'))), '') <> '');
+  res := res || pg_temp.fila('el cliente no puede escribir actualizaciones directamente',
+    pg_temp.como('authenticated', a, format($q$ with i as (insert into public.colecta_actualizaciones (colecta_id, titulo, texto)
+      values (%L, 'X', 'X') returning 1) select count(*) from i $q$, (select val from _b where k = 'col'))) = 'ERROR:42501');
+  res := res || pg_temp.fila('fotos de colectas: cada quien escribe solo en su carpeta',
+    pg_temp.como('authenticated', a, format($q$ with i as (insert into storage.objects (bucket_id, name) values ('colectas-fotos', %L)
+      returning 1) select count(*) from i $q$, a || '/prueba.jpg')) = '1'
+    and pg_temp.como('authenticated', a, format($q$ with i as (insert into storage.objects (bucket_id, name) values ('colectas-fotos', %L)
+      returning 1) select count(*) from i $q$, b || '/ajena.jpg')) = 'ERROR:42501');
+
   -- Resultado: el error revierte todo lo creado arriba.
   -- Resumen corto (el CLI recorta mensajes largos): cuántas pasaron y, completas, las que fallaron.
   raise exception E'PRUEBA RLS (todo se revierte): % OK, % con FALLA.%',

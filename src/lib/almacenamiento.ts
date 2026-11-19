@@ -4,7 +4,7 @@ import { clienteRemoto } from './supabase'
 // Fotos en Supabase Storage. La ruta es <id del usuario>/<nombre aleatorio>.jpg: la política de
 // la base solo deja escribir dentro de la carpeta propia. El nombre aleatorio (256 bits) hace que
 // una URL pública no se pueda adivinar. Tamaño y tipo también los limita el bucket (2 MB, JPEG).
-export type Bucket = 'mascotas-fotos' | 'cartillas-fotos'
+export type Bucket = 'mascotas-fotos' | 'cartillas-fotos' | 'colectas-fotos'
 
 /** `imagen.ts` entrega la foto como data URL; Storage necesita un Blob. */
 function dataUrlABlob(dataUrl: string): Blob {

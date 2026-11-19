@@ -18,6 +18,9 @@ import { rutas } from './rutas'
 // pre-caché, así que también abren sin red.
 const PanelAutoridad = lazy(() => import('../features/autoridad/PanelAutoridad'))
 const Comunidad = lazy(() => import('../features/comunidad/Comunidad'))
+const FichaVeterinaria = lazy(() => import('../features/veterinarias/FichaVeterinaria'))
+const PaginaColecta = lazy(() => import('../features/solidario/PaginaColecta'))
+const NuevaColecta = lazy(() => import('../features/solidario/NuevaColecta'))
 const BuscarPorId = lazy(() => import('../features/publico/BuscarPorId'))
 const PerfilPublico = lazy(() => import('../features/publico/PerfilPublico'))
 const CentroAvisos = lazy(() => import('../features/avisos/CentroAvisos'))
@@ -77,6 +80,9 @@ export default function App() {
           <Route path="mascotas/:id" element={<FichaMascota />} />
           <Route path="mascotas/:id/editar" element={<EditarMascota />} />
           <Route path="comunidad" element={<Comunidad />} />
+          <Route path="comunidad/veterinarias/:id" element={<FichaVeterinaria />} />
+          <Route path="comunidad/solidario/nueva" element={<NuevaColecta />} />
+          <Route path="comunidad/solidario/:id" element={<PaginaColecta />} />
           <Route path="salud" element={<Salud />} />
           <Route path="avisos" element={<CentroAvisos />} />
           {pendientes.map((r) => (

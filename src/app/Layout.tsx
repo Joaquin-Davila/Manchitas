@@ -15,7 +15,7 @@ export default function Layout() {
   const titulo =
     rutas.find((r) => (r.path === '/' ? pathname === '/' : pathname.startsWith(r.path)))?.titulo ??
     'Manchitas'
-  const ancha = ANCHAS.includes(pathname)
+  const ancha = ANCHAS.includes(pathname) || pathname.startsWith('/comunidad/')
 
   return (
     <div className="min-h-dvh bg-crema">
