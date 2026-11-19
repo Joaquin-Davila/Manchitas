@@ -11,14 +11,14 @@ Pantalla de referencia ya diseñada: **Inicio del tutor** (`reference/inicio.png
 | Fondo de pantalla (crema) | `#FFF4DC` |
 | Encabezado (amarillo) | `#FBD66E` |
 | Borde/sombra inferior del encabezado | `#F2C24E` |
-| Acción principal (naranja) | `#C75F08` |
+| Acción principal (naranja) | `#B85506` |
 | Sombra del botón naranja | `#8F4304` |
 | Texto principal (café oscuro) | `#3B2A12` |
 | Texto secundario | `#5A4217` |
 | Tarjeta | `#FFFFFF` con sombra `0 3px 0 #EBD9AE` |
 | Borde de barra inferior | `#F2E2B8` |
 
-El naranja `#C75F08` se eligió para que el texto blanco encima cumpla contraste de lectura. No lo aclares.
+El naranja `#B85506` da **4.84:1** con texto blanco (WCAG AA pide 4.5:1). Antes era `#C75F08`, que daba 4.14:1 y no cumplía; se oscureció en el paso 12c. No lo aclares.
 
 ### Colores de apoyo (tarjetas y etiquetas)
 | Uso | Fondo |
@@ -29,7 +29,7 @@ El naranja `#C75F08` se eligió para que el texto blanco encima cumpla contraste
 | Celeste (estado) | `#A9E3EE` |
 | Franja con nombre de mascota | `#BDEAF2` con texto `#24505B` |
 | Ícono salud/campañas | fondo `#D4F0EC`, trazo `#0B6F66` |
-| Ícono recordatorios | fondo `#FFE6C7`, trazo `#C75F08` |
+| Ícono recordatorios | fondo `#FFE6C7`, trazo `#B85506` |
 | Hueco de foto sin imagen | `#F3DDB0`, huella `#D9A441` |
 
 ### Paleta oficial de marca (se conserva para logo y acentos)
@@ -86,6 +86,10 @@ Píldoras con fondo de color de apoyo, texto oscuro, 11–13 px. El filtro activ
 - Mantener los textos cortos y en español. Datos de ejemplo realistas.
 - Pantalla pública del QR: mismo estilo, sin la barra inferior (la ve un desconocido), sin la palabra "perdido".
 - Contraste mínimo 4.5:1 en texto y 44 px de área táctil.
+- Texto de error: `#B91C1C` sobre crema o blanco; sobre fondo rosa (etiquetas) usar `#991B1B` (5.4:1). El coral `#EF4444` es solo para íconos y detalles, nunca para texto ni como fondo con texto blanco (3.76:1).
+- Foco visible: contorno de 2 px en `#8F4304` con separación de 2 px en todo lo interactivo (regla global en `index.css`).
+- Con `prefers-reduced-motion` las transiciones se anulan (regla global).
+- Excepción documentada: los dos enlaces de atribución del mapa (OpenStreetMap y Leaflet) miden 36 px de alto; son texto en línea y superan los 24 px de WCAG 2.2.
 
 ## Escritorio (paso 12a)
 El diseño de móvil (390 px) no cambia. Se adapta con dos puntos de quiebre de Tailwind: `md` (768 px) y `lg` (1024 px).

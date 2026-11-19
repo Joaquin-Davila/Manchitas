@@ -53,7 +53,7 @@ function EtiquetaTipo({ r }: { r: ReporteAutoridad }) {
   const urgente = URGENTES.has(r.tipo)
   return (
     <span
-      className={`rounded-full px-3 py-1 text-[11px] font-semibold ${urgente ? 'bg-rosa text-error' : 'bg-aviso-fondo text-cafe'}`}
+      className={`rounded-full px-3 py-1 text-[11px] font-semibold ${urgente ? 'bg-rosa text-error-oscuro' : 'bg-aviso-fondo text-cafe'}`}
     >
       {tituloTipo(r.tipo)}
     </span>

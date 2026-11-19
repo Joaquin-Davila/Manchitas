@@ -152,7 +152,7 @@ export default function PanelCartilla({ mascota, cartilla, acciones }: Props) {
       {error && <MensajeError id="error-cartilla">{error}</MensajeError>}
 
       <Tarjeta className="flex flex-col gap-3 p-4">
-        <h3 className="font-titulo text-base font-semibold">Próxima vacuna</h3>
+        <h2 className="font-titulo text-base font-semibold">Próxima vacuna</h2>
         {proxima ? (
           <>
             <div className="flex items-center gap-3">
@@ -202,7 +202,7 @@ export default function PanelCartilla({ mascota, cartilla, acciones }: Props) {
       </Tarjeta>
 
       <Tarjeta className="flex flex-col gap-3 p-4">
-        <h3 className="font-titulo text-base font-semibold">Vacunas aplicadas</h3>
+        <h2 className="font-titulo text-base font-semibold">Vacunas aplicadas</h2>
         {vacunas.length > 0 ? (
           <ul className="m-0 flex list-none flex-col divide-y-2 divide-barra-borde p-0">
             {vacunas.map((v) => (
@@ -232,7 +232,7 @@ export default function PanelCartilla({ mascota, cartilla, acciones }: Props) {
       )}
 
       <Tarjeta className="flex flex-col gap-3 p-4">
-        <h3 className="font-titulo text-base font-semibold">Foto de la cartilla</h3>
+        <h2 className="font-titulo text-base font-semibold">Foto de la cartilla</h2>
         {fotoCartilla ? (
           <img
             src={fotoCartilla}

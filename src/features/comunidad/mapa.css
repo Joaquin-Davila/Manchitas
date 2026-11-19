@@ -1,0 +1,20 @@
+/* Ajustes de Leaflet (se importan después de leaflet.css para ganar en orden). */
+
+/* Controles de zoom con área táctil de 44 px. */
+.leaflet-bar a,
+.leaflet-touch .leaflet-bar a {
+  width: 44px;
+  height: 44px;
+  line-height: 44px;
+  font-size: 22px;
+}
+
+/* La atribución de OpenStreetMap debe verse siempre; sus enlaces ganan área táctil. */
+.leaflet-container .leaflet-control-attribution {
+  font-size: 12px;
+  line-height: 1.3;
+}
+.leaflet-control-attribution a {
+  display: inline-block;
+  padding: 10px 3px;
+}

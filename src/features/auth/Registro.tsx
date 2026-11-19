@@ -239,7 +239,7 @@ export default function Registro() {
         {paso === 1 && (
           <p className="text-center text-sm text-cafe-suave">
             ¿Ya tienes cuenta?{' '}
-            <Link to="/iniciar-sesion" className="font-semibold text-naranja-sombra underline">
+            <Link to="/iniciar-sesion" className="inline-flex min-h-11 items-center px-1 font-semibold text-naranja-sombra underline">
               Inicia sesión
             </Link>
           </p>

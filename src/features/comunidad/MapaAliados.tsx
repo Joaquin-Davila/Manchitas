@@ -1,7 +1,8 @@
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import './mapa.css'
 import { useEffect } from 'react'
-import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, Marker, Popup, TileLayer, useMap, ZoomControl } from 'react-leaflet'
 import { enlaceComoLlegar } from '../../lib/campanasEjemplo'
 import type { Aliado } from '../../lib/campanasEjemplo'
 
@@ -32,7 +33,8 @@ function Ajustar({ aliados }: { aliados: Aliado[] }) {
 
 export default function MapaAliados({ aliados }: { aliados: Aliado[] }) {
   return (
-    <MapContainer center={CENTRO} zoom={12} scrollWheelZoom={false} className="h-full w-full">
+    <MapContainer center={CENTRO} zoom={12} scrollWheelZoom={false} zoomControl={false} className="h-full w-full">
+      <ZoomControl zoomInTitle="Acercar el mapa" zoomOutTitle="Alejar el mapa" />
       <TileLayer
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         maxZoom={19}

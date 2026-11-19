@@ -72,7 +72,7 @@ export default function IniciarSesion() {
         </form>
         <p className="mt-6 text-center text-sm text-cafe-suave">
           ¿Aún no tienes cuenta?{' '}
-          <Link to="/registro" className="font-semibold text-naranja-sombra underline">
+          <Link to="/registro" className="inline-flex min-h-11 items-center px-1 font-semibold text-naranja-sombra underline">
             Regístrate
           </Link>
         </p>

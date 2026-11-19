@@ -91,14 +91,14 @@ export default function FormularioVacuna({ nacimiento, onGuardar, onCancelar }: 
     <Tarjeta className="p-4">
       <form noValidate onSubmit={enviar} aria-labelledby="titulo-vacuna" className="flex flex-col gap-5">
         <div>
-          <h3
+          <h2
             id="titulo-vacuna"
             ref={titulo}
             tabIndex={-1}
             className="font-titulo text-base font-semibold outline-none"
           >
             Registrar vacuna aplicada
-          </h3>
+          </h2>
           <p className="text-[13px] text-cafe-suave">Los campos con * son obligatorios.</p>
         </div>
 
