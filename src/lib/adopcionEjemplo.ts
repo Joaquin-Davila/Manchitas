@@ -16,6 +16,8 @@ export type Animal = {
   descripcion: string
   publicadoPor: string
   verificado: boolean
+  /** Quien publica en Manchitas (para el chat); solo los animales de Supabase lo traen. */
+  publicadorId?: string
   /** Foto de banco gratuito (Pexels), de ejemplo: no es el animal real. Créditos en docs/ATRIBUCION-IMAGENES.md. */
   foto: string
   fotoAlt: string
@@ -156,9 +158,9 @@ function normalizar(texto: string): string {
   return texto.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim()
 }
 
-export function filtrarAnimales(busqueda: string, f: FiltrosAdopcion): Animal[] {
+export function filtrarAnimales(busqueda: string, f: FiltrosAdopcion, lista: Animal[] = animales): Animal[] {
   const q = normalizar(busqueda)
-  return animales.filter(
+  return lista.filter(
     (a) =>
       (!f.especie || a.especie === f.especie) &&
       (!f.edad || (f.edad === 'cachorro') === esCachorro(a)) &&

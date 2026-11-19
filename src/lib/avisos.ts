@@ -171,8 +171,8 @@ export function generarAvisos({ hoy, sesion, mascotas, cartillas, campanas, noti
   for (const n of notificaciones) {
     avisos.push({
       id: `notificacion-${n.id}`,
-      categoria: n.tipo.startsWith('extravio') || n.tipo === 'foro_abierto' || n.tipo === 'avistamiento' || n.tipo === 'comentario_foro' ? 'comunidad' : 'cuenta',
-      importante: n.tipo === 'extravio_aviso_previo' || n.tipo === 'avistamiento',
+      categoria: n.tipo === 'solicitud_adopcion' ? 'adopciones' : n.tipo === 'recordatorio' ? 'salud' : 'comunidad',
+      importante: n.tipo === 'extravio_aviso_previo' || n.tipo === 'avistamiento' || n.tipo === 'extravio_localizado',
       titulo: n.titulo,
       descripcion: n.texto,
       fecha: n.creadaEn.slice(0, 10),

@@ -3,6 +3,7 @@ import Encabezado from '../components/ui/Encabezado'
 import BarraInferior from '../components/ui/BarraInferior'
 import BarraSuperior from '../components/ui/BarraSuperior'
 import PanelAjustes from '../features/auth/PanelAjustes'
+import BotonMensajes from '../features/mensajes/BotonMensajes'
 import { rutas } from './rutas'
 
 // Pantallas con rejillas: usan todo el ancho en escritorio. Las demás se quedan en una columna
@@ -14,13 +15,18 @@ export default function Layout() {
   // Las subrutas (p. ej. /mascotas/nueva) heredan el título de su sección.
   const titulo =
     rutas.find((r) => (r.path === '/' ? pathname === '/' : pathname.startsWith(r.path)))?.titulo ??
-    'Manchitas'
-  const ancha = ANCHAS.includes(pathname) || pathname.startsWith('/comunidad/')
+    (pathname.startsWith('/mensajes') ? 'Mensajes' : 'Manchitas')
+  const ancha = ANCHAS.includes(pathname) || pathname.startsWith('/comunidad/') || pathname.startsWith('/mensajes')
 
   return (
     <div className="min-h-dvh bg-crema">
       <div className="print:hidden">
-        <Encabezado titulo={titulo} navegacion={<BarraSuperior />} derecha={<PanelAjustes />} />
+        <Encabezado titulo={titulo} navegacion={<BarraSuperior />} derecha={
+            <div className="flex items-center gap-2">
+              <BotonMensajes />
+              <PanelAjustes />
+            </div>
+          } />
       </div>
       {/* pb-32: espacio para que la barra flotante (solo móvil y tableta) no tape el contenido.
           Al imprimir solo sale la etiqueta, con el ancho de siempre. */}

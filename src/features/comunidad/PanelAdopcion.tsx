@@ -2,8 +2,10 @@ import { ArrowRight, BadgeCheck, Cat, Dog, Heart, HeartHandshake, LayoutGrid, Se
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { clasesBotonSecundario } from '../../components/ui/BotonSecundario'
-import { SIN_FILTROS_ADOPCION, esCachorro, filtrarAnimales, textoEdad } from '../../lib/adopcionEjemplo'
+import { SIN_FILTROS_ADOPCION, animales as animalesDeEjemplo, esCachorro, filtrarAnimales, textoEdad } from '../../lib/adopcionEjemplo'
 import type { Animal, Edad, FiltrosAdopcion, Sexo, Tamano } from '../../lib/adopcionEjemplo'
+import { listarAdopciones } from '../../lib/adopciones'
+import { useCarga } from '../../lib/useCarga'
 import { Aparecer, clasesElevar, clasesTarjeta } from '../mascotas/inicio/comun'
 import FichaAdopcion from './FichaAdopcion'
 import { BotonLimpiar, Buscador, Chip, FilaChips } from './piezas'
@@ -93,7 +95,8 @@ export default function PanelAdopcion() {
   const [filtros, setFiltros] = useState<FiltrosAdopcion>(SIN_FILTROS_ADOPCION)
   const [abierto, setAbierto] = useState<Animal | null>(null)
 
-  const lista = filtrarAnimales(busqueda, filtros)
+  const { datos } = useCarga('adopciones', () => listarAdopciones().catch(() => animalesDeEjemplo))
+  const lista = filtrarAnimales(busqueda, filtros, datos ?? animalesDeEjemplo)
   const hayFiltros = busqueda !== '' || Object.values(filtros).some((v) => v !== null)
 
   // Volver a tocar un filtro activo lo quita.

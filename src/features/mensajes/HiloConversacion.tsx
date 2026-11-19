@@ -1,5 +1,5 @@
 import { Archive, ArchiveRestore, ArrowLeft, Check, CheckCheck, EllipsisVertical, Flag, ImagePlus, MapPin, Send, ShieldBan, ShieldCheck, X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent, KeyboardEvent } from 'react'
 import { Link } from 'react-router-dom'
 import BotonPrincipal from '../../components/ui/BotonPrincipal'
@@ -204,7 +204,6 @@ export default function HiloConversacion({
     }
   }
 
-  let diaActual = ''
   return (
     <section aria-label={`Conversación con ${c.otroNombre}`} className="flex h-full min-h-0 flex-col overflow-hidden rounded-[24px] border border-borde-calido bg-crema shadow-suave">
       <header className="flex items-center gap-2 border-b border-borde-calido bg-white px-3 py-2.5">
@@ -258,17 +257,16 @@ export default function HiloConversacion({
         </div>
       </header>
 
-      <ol className="m-0 flex min-h-0 flex-1 list-none flex-col gap-2 overflow-y-auto p-3 md:p-4" aria-live="polite" aria-label="Mensajes">
+      <ol tabIndex={0} className="m-0 flex min-h-0 flex-1 list-none flex-col gap-2 overflow-y-auto p-3 outline-none focus-visible:ring-2 focus-visible:ring-naranja/40 md:p-4" aria-live="polite" aria-label="Mensajes">
         {mensajes.length === 0 && <li className="m-auto max-w-xs text-center text-sm text-cafe-suave">Aún no hay mensajes. Escribe el primero o usa un mensaje rápido.</li>}
-        {mensajes.map((m) => {
+        {mensajes.map((m, i) => {
           const d = dia.format(new Date(m.creadoEn))
-          const separador = d !== diaActual
-          diaActual = d
+          const separador = i === 0 || d !== dia.format(new Date(mensajes[i - 1].creadoEn))
           return (
-            <li key={m.id} className="contents">
-              {separador && <span className="my-1 self-center rounded-full bg-white px-3 py-1 text-xs font-semibold capitalize text-cafe-suave">{d}</span>}
-              <ul className="m-0 list-none p-0"><Burbuja m={m} otroLeidoEn={c.otroLeidoEn} /></ul>
-            </li>
+            <Fragment key={m.id}>
+              {separador && <li className="my-1 self-center rounded-full bg-white px-3 py-1 text-xs font-semibold capitalize text-cafe-suave">{d}</li>}
+              <Burbuja m={m} otroLeidoEn={c.otroLeidoEn} />
+            </Fragment>
           )
         })}
         <li ref={fin} aria-hidden="true" className="h-px" />

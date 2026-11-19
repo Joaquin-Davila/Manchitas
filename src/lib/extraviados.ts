@@ -16,6 +16,8 @@ export const NOMBRE_ESTADO_EXTRAVIADO: Record<EstadoExtraviado, string> = {
 export type Extraviado = {
   id: string
   tutor: string
+  /** Quién reportó (para escribirle por el chat); vacío en reportes de ejemplo sin cuenta. */
+  tutorId?: string
   /** El reporte es de la persona con sesión. */
   esMio: boolean
   mascotaId?: string
@@ -41,6 +43,7 @@ export type Extraviado = {
 export type Mensaje = {
   id: string
   autor: string
+  autorId?: string
   tipo: 'avistamiento' | 'comentario'
   texto: string
   zona: string
@@ -83,6 +86,7 @@ function aExtraviado(f: Fila, usuarioId?: string): Extraviado {
   return {
     id: f.id,
     tutor: f.tutor_nombre,
+    tutorId: f.tutor_id ?? undefined,
     esMio: !!usuarioId && f.tutor_id === usuarioId,
     mascotaId: f.mascota_id ?? undefined,
     nombre: f.nombre,
@@ -133,6 +137,7 @@ export async function mensajesDe(id: string, usuarioId?: string): Promise<Mensaj
   return data.map((m) => ({
     id: m.id,
     autor: m.autor_nombre,
+    autorId: m.autor_id ?? undefined,
     tipo: m.tipo as Mensaje['tipo'],
     texto: m.texto,
     zona: m.zona,

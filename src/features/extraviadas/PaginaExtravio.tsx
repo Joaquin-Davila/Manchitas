@@ -19,6 +19,7 @@ import { reducirImagen } from '../../lib/imagen'
 import { useCarga } from '../../lib/useCarga'
 import { useSesion } from '../auth/contextoSesion'
 import { clasesFoco, clasesTarjeta } from '../mascotas/inicio/comun'
+import BotonEscribir from '../mensajes/BotonEscribir'
 import { EtiquetaEstadoExtraviado } from './TarjetaExtraviado'
 
 function LineaTiempo({ e }: { e: Extraviado }) {
@@ -354,6 +355,9 @@ export default function PaginaExtravio() {
                       </p>
                     )}
                     {m.foto && <img src={m.foto} alt={`Foto compartida por ${m.autor}`} loading="lazy" className="mt-1 max-h-72 w-fit max-w-full rounded-2xl object-cover" />}
+                    {!m.mio && m.autorId && usuarioId && (
+                      <BotonEscribir tipo="comunidad" contextoId={null} con={m.autorId} etiqueta={`Escribir a ${m.autor}`} compacto />
+                    )}
                     {(m.mio || e.esMio) && (
                       <button
                         type="button"
@@ -376,6 +380,10 @@ export default function PaginaExtravio() {
             <ShieldAlert aria-hidden="true" size={17} className="mt-0.5 shrink-0" />
             Por privacidad no mostramos domicilios ni teléfonos. La zona es aproximada.
           </p>
+
+          {activo && !e.esMio && e.tutorId && (
+            <BotonEscribir tipo="extraviado" contextoId={e.id} etiqueta="Enviar mensaje al tutor" />
+          )}
 
           {activo && !e.esMio && (
             e.contactoWhatsapp ? (

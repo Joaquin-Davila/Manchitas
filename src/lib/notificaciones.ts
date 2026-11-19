@@ -34,3 +34,27 @@ export async function listarNotificaciones(limite = 50): Promise<Notificacion[]>
     demo: n.es_demo,
   }))
 }
+
+/** Marca una notificación como leída en la base (solo se puede cambiar ese campo). */
+export async function marcarNotificacionLeida(id: string): Promise<void> {
+  if (!haySupabase) return
+  await clienteRemoto().from('notificaciones').update({ leida: true }).eq('id', id)
+}
+
+export async function marcarTodasLeidas(): Promise<void> {
+  if (!haySupabase) return
+  await clienteRemoto().from('notificaciones').update({ leida: true }).eq('leida', false)
+}
+
+/** Se entera en tiempo real de notificaciones nuevas (RLS: solo llegan las tuyas). */
+export function suscribirNotificaciones(alCambiar: () => void): () => void {
+  if (!haySupabase) return () => undefined
+  const db = clienteRemoto()
+  const canal = db
+    .channel(`notificaciones-${Math.random().toString(36).slice(2, 10)}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'notificaciones' }, alCambiar)
+    .subscribe()
+  return () => {
+    void db.removeChannel(canal)
+  }
+}

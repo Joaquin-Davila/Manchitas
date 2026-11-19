@@ -4,7 +4,7 @@ import type { Aviso } from '../../lib/avisos'
 import { campanasProximas } from '../../lib/campanasEjemplo'
 import { obtenerCartilla } from '../../lib/cartillas'
 import { hoyISO } from '../../lib/edad'
-import { listarNotificaciones } from '../../lib/notificaciones'
+import { listarNotificaciones, marcarNotificacionLeida, marcarTodasLeidas, suscribirNotificaciones } from '../../lib/notificaciones'
 import { useCarga } from '../../lib/useCarga'
 import type { Cartilla } from '../../types/cartilla'
 import { useSesion } from '../auth/contextoSesion'
@@ -48,6 +48,9 @@ export function useAvisos() {
   const ids = mascotas.map((m) => m.id).join(',')
   // Las notificaciones del servidor se suman cuando llegan; si no cargan, el resto de los avisos sigue igual.
   const notificaciones = useCarga(`notificaciones-${correo}`, () => listarNotificaciones().catch(() => []))
+  const recargarNotificaciones = notificaciones.recargar
+  // Tiempo real: una notificación nueva aparece sin recargar la pantalla.
+  useEffect(() => suscribirNotificaciones(recargarNotificaciones), [recargarNotificaciones])
 
   useEffect(() => {
     if (cargandoMascotas || errorMascotas) return
@@ -84,9 +87,10 @@ export function useAvisos() {
     if (!listos) return []
     const eliminados = new Set(marcasActuales.eliminados)
     const leidos = new Set(marcasActuales.leidos)
+    const dbLeidas = new Set((notificaciones.datos ?? []).filter((n) => n.leida).map((n) => `notificacion-${n.id}`))
     return generarAvisos({ hoy, sesion, mascotas, cartillas: cartillas.datos, campanas: campanasProximas(hoy), notificaciones: notificaciones.datos ?? [] })
       .filter((a) => !eliminados.has(a.id))
-      .map((a) => ({ ...a, leido: leidos.has(a.id) }))
+      .map((a) => ({ ...a, leido: leidos.has(a.id) || dbLeidas.has(a.id) }))
   }, [listos, cartillas, marcasActuales, hoy, sesion, mascotas, notificaciones.datos])
 
   return {
@@ -97,8 +101,15 @@ export function useAvisos() {
     /** Alguna cartilla no cargó: sus avisos de salud no aparecen. */
     faltanCartillas: listos && cartillas.fallo,
     eliminados: marcasActuales.eliminados.length,
-    marcarLeido: (id: string) => guardar((m) => (m.leidos.includes(id) ? m : { ...m, leidos: [...m.leidos, id] })),
-    marcarTodos: () => guardar((m) => ({ ...m, leidos: [...new Set([...m.leidos, ...avisos.map((a) => a.id)])] })),
+    marcarLeido: (id: string) => {
+      // Las notificaciones del servidor se marcan también en la base (así el estado sigue en otros dispositivos).
+      if (id.startsWith('notificacion-')) void marcarNotificacionLeida(id.slice('notificacion-'.length)).then(() => recargarNotificaciones())
+      guardar((m) => (m.leidos.includes(id) ? m : { ...m, leidos: [...m.leidos, id] }))
+    },
+    marcarTodos: () => {
+      void marcarTodasLeidas().then(() => recargarNotificaciones())
+      guardar((m) => ({ ...m, leidos: [...new Set([...m.leidos, ...avisos.map((a) => a.id)])] }))
+    },
     eliminar: (id: string) => guardar((m) => ({ ...m, eliminados: [...m.eliminados, id] })),
     restaurar: () => guardar((m) => ({ ...m, eliminados: [] })),
   }

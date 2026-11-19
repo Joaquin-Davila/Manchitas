@@ -24,7 +24,7 @@ No uses esta contraseña para nada más. Para cambiarla, edita `VITE_DEMO_PASSWO
 
 - Mascotas extraviadas de demostración, cada una en una etapa: **Max** (día 2, recibiendo avistamientos), **Oreo** (de la cuenta demo, día 4: ya tiene el aviso previo), **Nina** (día 6, con foro abierto que crea la propia automatización) y **Rocco** (localizado, con foro cerrado e historial). Más 4 reportes ciudadanos de ejemplo que ve el panel de autoridad.
 
-Pendiente en los bloques siguientes: chat y el centro de notificaciones completo.
+- Chat: 5 personas de ejemplo (la rescatista, el dueño de la veterinaria y tres tutores) **sin contraseña, nadie puede iniciar sesión con ellas**, y 5 conversaciones de la cuenta demo: veterinaria, adopción (con foto), mascota extraviada (con ubicación aproximada), comunidad (archivada) y una sobre el reporte de Oreo, con mensajes sin leer y estados de lectura distintos. Más 8 notificaciones variadas.
 
 ## Crear o restablecer la cuenta y los datos
 
@@ -80,3 +80,11 @@ La campaña "Un hogar temporal para gatitos rescatados" de la cuenta demo queda 
 - Ejecutarla a mano (con tu confirmación): `npx supabase db query --remote --yes "select public.procesar_extraviados()"`.
 - Si por alguna razón `pg_cron` no estuviera activo: `create extension pg_cron with schema pg_catalog;` y `select cron.schedule('procesar-extraviados', '*/30 * * * *', 'select public.procesar_extraviados()');`.
 - Volver a correr el seed **reinicia** solo los extraviados de demostración con fechas relativas a hoy, para que las etapas sigan vigentes.
+
+## Chat y notificaciones
+
+- Para probar el tiempo real con una sola cuenta, inserta un mensaje como una de las personas de ejemplo mientras tienes abierto Mensajes: `npx supabase db query --remote --yes "insert into public.chat_mensajes (conversacion_id, autor_id, tipo, texto, es_demo) values ('de000012-0000-4000-8000-000000000001', 'de000020-0000-4000-8000-000000000002', 'texto', 'Hola desde el servidor', true)"`. Debe aparecer sin recargar y subir el contador del encabezado.
+- Volver a correr el seed recrea las conversaciones y las notificaciones de demostración (y deja los chats como al principio).
+- Reportes de chat: los lee un moderador (`select * from chat_reportes where estado = 'abierto'`; para cerrar uno, `update chat_reportes set estado = 'revisado' where id = '<id>'`).
+- La persona bloqueada no ve que la bloquearon: solo recibe un error al intentar escribir.
+- Las ubicaciones que se comparten se redondean en el servidor a 2 decimales (~1 km) y no se guarda la posición exacta.

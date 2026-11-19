@@ -39,7 +39,11 @@ update public.extraviados set tutor_id = 'de000020-0000-4000-8000-000000000004' 
 -- Conversaciones de la cuenta demo (5): veterinaria, adopción, extraviada, comunidad (archivada) y
 -- una sobre su propio reporte de Oreo. Con mensajes entrantes y salientes y estados de lectura distintos.
 -- ---------------------------------------------------------------------------------------
-delete from public.chat_conversaciones where es_demo;
+-- Se recrea TODO el chat de la cuenta demo: las conversaciones de ejemplo y también las que haya
+-- abierto alguien al probar la app con esa cuenta.
+delete from public.chat_conversaciones c
+ where c.es_demo
+    or exists (select 1 from public.chat_participantes p where p.conversacion_id = c.id and p.usuario_id = 'de000000-0000-4000-8000-000000000001');
 
 insert into public.chat_conversaciones (id, tipo, contexto_id, contexto_titulo, contexto_foto, clave, creado_por, es_demo, creado_en) values
   ('de000012-0000-4000-8000-000000000001', 'veterinaria', 'de000002-0000-4000-8000-000000000002', 'Veterinaria Patitas del Desierto', '/images/aliados/veterinaria-patitas.webp', 'demo:veterinaria', 'de000000-0000-4000-8000-000000000001', true, now() - interval '2 days'),
@@ -57,6 +61,14 @@ select c.id::uuid, u.id::uuid, public.nombre_visible(u.id::uuid)
     ('de000012-0000-4000-8000-000000000004', 'de000000-0000-4000-8000-000000000001'), ('de000012-0000-4000-8000-000000000004', 'de000020-0000-4000-8000-000000000004'),
     ('de000012-0000-4000-8000-000000000005', 'de000000-0000-4000-8000-000000000001'), ('de000012-0000-4000-8000-000000000005', 'de000020-0000-4000-8000-000000000005')
   ) as c(id, uid) cross join lateral (select c.uid as id) u;
+
+-- La clave de cada conversación debe ser la que calcula iniciar_conversacion(), para que "Escribir"
+-- desde una ficha REUTILICE estas conversaciones en lugar de crear duplicadas.
+update public.chat_conversaciones c
+   set clave = c.tipo || ':' || coalesce(c.contexto_id::text, '-') || ':' ||
+               (select least(min(p.usuario_id::text), max(p.usuario_id::text)) from public.chat_participantes p where p.conversacion_id = c.id) || ':' ||
+               (select greatest(min(p.usuario_id::text), max(p.usuario_id::text)) from public.chat_participantes p where p.conversacion_id = c.id)
+ where c.es_demo;
 
 -- Mensajes, en orden cronológico. entregado_en queda vacío en los que la cuenta demo aún no ha visto.
 insert into public.chat_mensajes (id, conversacion_id, autor_id, tipo, texto, foto, lat, lng, zona, entregado_en, es_demo, creado_en) values

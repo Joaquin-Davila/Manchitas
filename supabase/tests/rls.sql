@@ -580,6 +580,141 @@ begin
   res := res || pg_temp.fila('un reporte cerrado deja de entregar el contacto por WhatsApp',
     coalesce(pg_temp.como('authenticated', b, $q$ select public.extravio_whatsapp('00000000-0000-4000-8000-0000000000a5') $q$), '') = '');
 
+  -- Bloque D: chat y notificaciones --------------------------------------------------------------
+  -- (una llamada a función volátil por sentencia; ver nota del bloque C)
+  perform set_config('request.jwt.claims', '', true);
+  v := pg_temp.como('authenticated', b, format($q$ select public.iniciar_conversacion('extraviado', %L, null)::text $q$, (select val from _b where k = 'ext')));
+  insert into _b values ('conv', v);
+  res := res || pg_temp.fila('una persona abre una conversación con el tutor de un reporte (el servidor elige al destinatario)',
+    v ~ '^[0-9a-f-]{36}$'
+    and (select count(*) = 2 from public.chat_participantes where conversacion_id = (select val::uuid from _b where k = 'conv'))
+    and exists (select 1 from public.chat_participantes where conversacion_id = (select val::uuid from _b where k = 'conv') and usuario_id = a and nombre like 'Ana%')
+    and exists (select 1 from public.chat_participantes where conversacion_id = (select val::uuid from _b where k = 'conv') and usuario_id = b and nombre like 'Beto%'));
+  v := pg_temp.como('authenticated', b, format($q$ select public.iniciar_conversacion('extraviado', %L, null)::text $q$, (select val from _b where k = 'ext')));
+  res := res || pg_temp.fila('abrir la misma conversación otra vez la reutiliza (sin duplicados)', v = (select val from _b where k = 'conv'));
+  res := res || pg_temp.fila('no se puede abrir una conversación con uno mismo ni con un reporte sin tutor o cerrado',
+    pg_temp.como('authenticated', a, format($q$ select public.iniciar_conversacion('extraviado', %L, null)::text $q$, (select val from _b where k = 'ext'))) = 'ERROR:P0001'
+    and pg_temp.como('authenticated', b, $q$ select public.iniciar_conversacion('extraviado', '00000000-0000-4000-8000-0000000000a5', null)::text $q$) = 'ERROR:P0001'
+    and pg_temp.como('authenticated', b, $q$ select public.iniciar_conversacion('comunidad', null, null)::text $q$) = 'ERROR:P0001');
+  res := res || pg_temp.fila('quien no participa no ve la conversación, sus mensajes ni a sus participantes',
+    pg_temp.como('authenticated', '00000000-0000-4000-8000-0000000000c1', 'select count(*) from public.chat_conversaciones') = '0'
+    and pg_temp.como('authenticated', '00000000-0000-4000-8000-0000000000c1', 'select count(*) from public.chat_participantes') = '0'
+    and pg_temp.como('authenticated', '00000000-0000-4000-8000-0000000000c1', 'select count(*) from public.chat_bandeja') = '0'
+    and pg_temp.como('authenticated', b, 'select count(*) from public.chat_conversaciones') = '1');
+  res := res || pg_temp.fila('anon no lee nada del chat ni ejecuta sus funciones',
+    pg_temp.como('anon', null, 'select count(*) from public.chat_mensajes') = 'ERROR:42501'
+    and pg_temp.como('anon', null, 'select count(*) from public.chat_bandeja') = 'ERROR:42501'
+    and pg_temp.como('anon', null, $q$ select public.iniciar_conversacion('comunidad', null, null)::text $q$) = 'ERROR:42501'
+    and pg_temp.como('anon', null, 'select public.chat_no_leidos()::text') = 'ERROR:42501');
+
+  -- Mensajes
+  v := pg_temp.como('authenticated', b, format($q$ with i as (insert into public.chat_mensajes (conversacion_id, tipo, texto)
+        values (%L, 'texto', '  Hola, vi a tu mascota  ') returning 1) select count(*) from i $q$, (select val from _b where k = 'conv')));
+  res := res || pg_temp.fila('un participante envía un mensaje; el servidor fija autor y limpia el texto', v = '1'
+    and (select autor_id = b and texto = 'Hola, vi a tu mascota' and entregado_en is null and not es_demo
+           from public.chat_mensajes where conversacion_id = (select val::uuid from _b where k = 'conv')));
+  v := pg_temp.como('authenticated', b, format($q$ with i as (insert into public.chat_mensajes (conversacion_id, tipo, texto)
+        values (%L, 'texto', 'Estoy cerca de la avenida') returning 1) select count(*) from i $q$, (select val from _b where k = 'conv')));
+  res := res || pg_temp.fila('los mensajes nuevos avisan una sola vez (se agrupan en una notificación sin leer)',
+    v = '1' and (select count(*) = 1 from public.notificaciones where usuario_id = a and tipo = 'mensaje' and not leida)
+    and (select titulo like 'Nuevo mensaje de Beto%' and texto = 'Estoy cerca de la avenida' from public.notificaciones where usuario_id = a and tipo = 'mensaje'));
+  v := pg_temp.como('authenticated', b, format($q$ with i as (insert into public.chat_mensajes (conversacion_id, tipo, lat, lng, zona)
+        values (%L, 'ubicacion', 29.0912345, -110.9512345, 'Colonia Modelo') returning 1) select count(*) from i $q$, (select val from _b where k = 'conv')));
+  res := res || pg_temp.fila('la ubicación compartida se redondea (~1 km)', v = '1'
+    and (select lat = 29.09 and lng = -110.95 from public.chat_mensajes where tipo = 'ubicacion' and conversacion_id = (select val::uuid from _b where k = 'conv')));
+  res := res || pg_temp.fila('no se puede escribir en una conversación ajena ni hacerse pasar por otra persona',
+    pg_temp.como('authenticated', '00000000-0000-4000-8000-0000000000c1', format($q$ with i as (insert into public.chat_mensajes (conversacion_id, tipo, texto)
+      values (%L, 'texto', 'intruso') returning 1) select count(*) from i $q$, (select val from _b where k = 'conv'))) = 'ERROR:42501'
+    and pg_temp.como('authenticated', b, format($q$ with i as (insert into public.chat_mensajes (conversacion_id, tipo, texto, autor_id)
+      values (%L, 'texto', 'x', %L) returning 1) select count(*) from i $q$, (select val from _b where k = 'conv'), a)) = 'ERROR:42501');
+  res := res || pg_temp.fila('un texto vacío o una foto sin archivo no son mensajes válidos',
+    pg_temp.como('authenticated', b, format($q$ with i as (insert into public.chat_mensajes (conversacion_id, tipo, texto) values (%L, 'texto', '   ') returning 1) select count(*) from i $q$, (select val from _b where k = 'conv'))) = 'ERROR:23514'
+    and pg_temp.como('authenticated', b, format($q$ with i as (insert into public.chat_mensajes (conversacion_id, tipo) values (%L, 'foto') returning 1) select count(*) from i $q$, (select val from _b where k = 'conv'))) = 'ERROR:23514');
+  res := res || pg_temp.fila('los mensajes no se editan ni se borran desde el cliente',
+    pg_temp.como('authenticated', b, $q$ with u as (update public.chat_mensajes set texto = 'x' returning 1) select count(*) from u $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', b, $q$ with d as (delete from public.chat_mensajes returning 1) select count(*) from d $q$) = 'ERROR:42501');
+
+  -- Estados de lectura. En una transacción now() es constante: se retrasa la última lectura de a para
+  -- que los mensajes de b cuenten como no leídos, como pasaría en el uso real.
+  perform set_config('request.jwt.claims', '', true);
+  update public.chat_participantes set ultimo_leido_en = now() - interval '1 hour'
+   where conversacion_id = (select val::uuid from _b where k = 'conv') and usuario_id = a;
+  res := res || pg_temp.fila('la bandeja cuenta los mensajes sin leer del destinatario',
+    pg_temp.como('authenticated', a, format('select no_leidos::text from public.chat_bandeja where id = %L', (select val from _b where k = 'conv'))) = '3'
+    and pg_temp.como('authenticated', a, 'select public.chat_no_leidos()::text') = '3');
+  v := pg_temp.como('authenticated', '00000000-0000-4000-8000-0000000000c1', format($q$ with x as (select public.marcar_leida(%L)) select 'ok' from x $q$, (select val from _b where k = 'conv')));
+  res := res || pg_temp.fila('quien no participa no puede marcar una conversación como leída', v = 'ERROR:42501');
+  v := pg_temp.como('authenticated', a, format($q$ with x as (select public.marcar_leida(%L)) select 'ok' from x $q$, (select val from _b where k = 'conv')));
+  res := res || pg_temp.fila('al abrir la conversación quedan leídos y recibidos y se apaga el aviso', v = 'ok'
+    and (select count(*) = 0 from public.chat_mensajes where conversacion_id = (select val::uuid from _b where k = 'conv') and autor_id = b and entregado_en is null)
+    and (select leida from public.notificaciones where usuario_id = a and tipo = 'mensaje'));
+  res := res || pg_temp.fila('quien escribió ve cuándo leyó la otra persona (leído)',
+    pg_temp.como('authenticated', b, format($q$ select (otro_leido_en >= (select max(creado_en) from public.chat_mensajes where conversacion_id = %L))::text from public.chat_bandeja where id = %L $q$,
+      (select val from _b where k = 'conv'), (select val from _b where k = 'conv'))) = 'true'
+    and pg_temp.como('authenticated', a, format('select no_leidos::text from public.chat_bandeja where id = %L', (select val from _b where k = 'conv'))) = '0');
+
+  -- Archivar
+  v := pg_temp.como('authenticated', a, format($q$ with x as (select public.archivar_conversacion(%L, true)) select 'ok' from x $q$, (select val from _b where k = 'conv')));
+  res := res || pg_temp.fila('archivar solo afecta a quien archiva', v = 'ok'
+    and pg_temp.como('authenticated', a, format('select archivada::text from public.chat_bandeja where id = %L', (select val from _b where k = 'conv'))) = 'true'
+    and pg_temp.como('authenticated', b, format('select archivada::text from public.chat_bandeja where id = %L', (select val from _b where k = 'conv'))) = 'false');
+  v := pg_temp.como('authenticated', b, format($q$ with i as (insert into public.chat_mensajes (conversacion_id, tipo, texto) values (%L, 'texto', 'Sigo aquí') returning 1) select count(*) from i $q$, (select val from _b where k = 'conv')));
+  res := res || pg_temp.fila('un mensaje nuevo saca la conversación del archivo', v = '1'
+    and pg_temp.como('authenticated', a, format('select archivada::text from public.chat_bandeja where id = %L', (select val from _b where k = 'conv'))) = 'false');
+
+  -- Bloqueo
+  v := pg_temp.como('authenticated', a, format($q$ with x as (select public.bloquear_usuario(%L)) select 'ok' from x $q$, b));
+  res := res || pg_temp.fila('bloquear impide escribir en ambos sentidos', v = 'ok'
+    and pg_temp.como('authenticated', b, format($q$ with i as (insert into public.chat_mensajes (conversacion_id, tipo, texto) values (%L, 'texto', 'hola') returning 1) select count(*) from i $q$, (select val from _b where k = 'conv'))) = 'ERROR:P0001'
+    and pg_temp.como('authenticated', a, format($q$ with i as (insert into public.chat_mensajes (conversacion_id, tipo, texto) values (%L, 'texto', 'hola') returning 1) select count(*) from i $q$, (select val from _b where k = 'conv'))) = 'ERROR:P0001');
+  res := res || pg_temp.fila('quien fue bloqueado no puede abrir conversaciones nuevas con quien lo bloqueó',
+    pg_temp.como('authenticated', b, format($q$ select public.iniciar_conversacion('comunidad', null, %L)::text $q$, a)) = 'ERROR:P0001');
+  res := res || pg_temp.fila('quien bloquea ve su bloqueo; la persona bloqueada no se entera (solo recibe un error al escribir)',
+    pg_temp.como('authenticated', a, format('select (bloqueado and not me_bloqueo)::text from public.chat_bandeja where id = %L', (select val from _b where k = 'conv'))) = 'true'
+    and pg_temp.como('authenticated', b, format('select (not me_bloqueo and not bloqueado)::text from public.chat_bandeja where id = %L', (select val from _b where k = 'conv'))) = 'true'
+    and pg_temp.como('authenticated', a, 'select count(*) from public.chat_bloqueos') = '1'
+    and pg_temp.como('authenticated', b, 'select count(*) from public.chat_bloqueos') = '0');
+  v := pg_temp.como('authenticated', a, format($q$ with x as (select public.desbloquear_usuario(%L)) select 'ok' from x $q$, b));
+  res := res || pg_temp.fila('desbloquear restablece la conversación', v = 'ok'
+    and pg_temp.como('authenticated', b, format($q$ with i as (insert into public.chat_mensajes (conversacion_id, tipo, texto) values (%L, 'texto', 'gracias') returning 1) select count(*) from i $q$, (select val from _b where k = 'conv'))) = '1');
+  res := res || pg_temp.fila('nadie puede bloquearse a sí mismo ni escribir bloqueos directamente',
+    pg_temp.como('authenticated', a, format($q$ with x as (select public.bloquear_usuario(%L)) select 'ok' from x $q$, a)) = 'ERROR:42501'
+    and pg_temp.como('authenticated', a, format($q$ with i as (insert into public.chat_bloqueos (bloqueador_id, bloqueado_id) values (%L, %L) returning 1) select count(*) from i $q$, a, b)) = 'ERROR:42501');
+
+  -- Reportar conversaciones
+  v := pg_temp.como('authenticated', b, format($q$ with x as (select public.reportar_conversacion(%L, 'spam', 'Mensajes repetidos')) select 'ok' from x $q$, (select val from _b where k = 'conv')));
+  res := res || pg_temp.fila('un participante reporta la conversación', v = 'ok');
+  res := res || pg_temp.fila('solo un moderador lee los reportes de chat',
+    pg_temp.como('authenticated', '00000000-0000-4000-8000-0000000000d1', 'select count(*) from public.chat_reportes') = '1'
+    and pg_temp.como('authenticated', a, 'select count(*) from public.chat_reportes') = '0'
+    and pg_temp.como('authenticated', b, 'select count(*) from public.chat_reportes') = '0');
+  res := res || pg_temp.fila('quien no participa no puede reportar; el motivo debe ser válido',
+    pg_temp.como('authenticated', '00000000-0000-4000-8000-0000000000c1', format($q$ with x as (select public.reportar_conversacion(%L, 'spam', '')) select 'ok' from x $q$, (select val from _b where k = 'conv'))) = 'ERROR:42501'
+    and pg_temp.como('authenticated', b, format($q$ with x as (select public.reportar_conversacion(%L, 'inventado', '')) select 'ok' from x $q$, (select val from _b where k = 'conv'))) = 'ERROR:23514');
+
+  -- Fotos privadas
+  res := res || pg_temp.fila('las fotos del chat: solo quienes participan suben y leen (carpeta = conversación)',
+    pg_temp.como('authenticated', b, format($q$ with i as (insert into storage.objects (bucket_id, name) values ('chat-fotos', %L) returning 1) select count(*) from i $q$, (select val from _b where k = 'conv') || '/foto.jpg')) = '1'
+    and pg_temp.como('authenticated', '00000000-0000-4000-8000-0000000000c1', format($q$ with i as (insert into storage.objects (bucket_id, name) values ('chat-fotos', %L) returning 1) select count(*) from i $q$, (select val from _b where k = 'conv') || '/intruso.jpg')) = 'ERROR:42501'
+    and pg_temp.como('authenticated', a, $q$ select count(*) from storage.objects where bucket_id = 'chat-fotos' $q$) = '1'
+    and pg_temp.como('authenticated', '00000000-0000-4000-8000-0000000000c1', $q$ select count(*) from storage.objects where bucket_id = 'chat-fotos' $q$) = '0');
+  res := res || pg_temp.fila('el bucket de fotos del chat es privado',
+    (select not public from storage.buckets where id = 'chat-fotos'));
+  res := res || pg_temp.fila('Realtime publica los mensajes, las lecturas y las notificaciones',
+    (select count(*) = 3 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public'
+       and tablename in ('chat_mensajes', 'chat_participantes', 'notificaciones')));
+
+  -- Notificaciones de otras funciones
+  perform set_config('request.jwt.claims', '', true);
+  insert into public.resenas (id, establecimiento_id, autor_id, autor_nombre, puntuacion)
+    values ('00000000-0000-4000-8000-0000000000f2', '00000000-0000-4000-8000-0000000000e2', a, 'Ana L.', 5);
+  v := pg_temp.como('authenticated', b, $q$ with x as (select public.responder_resena('00000000-0000-4000-8000-0000000000f2', 'Gracias por tu visita')) select 'ok' from x $q$);
+  res := res || pg_temp.fila('responder una reseña avisa a quien la escribió', v = 'ok'
+    and exists (select 1 from public.notificaciones where usuario_id = a and tipo = 'resena_respuesta'));
+  res := res || pg_temp.fila('una aportación avisa al organizador y publicar su campaña también',
+    exists (select 1 from public.notificaciones where usuario_id = a and tipo = 'donacion')
+    and exists (select 1 from public.notificaciones where usuario_id = a and tipo = 'colecta_publicada'));
+
   -- Resultado: el error revierte todo lo creado arriba.
   -- Resumen corto (el CLI recorta mensajes largos): cuántas pasaron y, completas, las que fallaron.
   raise exception E'PRUEBA RLS (todo se revierte): % OK, % con FALLA.%',

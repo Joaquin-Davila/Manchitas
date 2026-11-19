@@ -1,5 +1,6 @@
 import { BadgeCheck, Cat, CircleCheck, Dog, HeartHandshake, ShieldCheck, X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import BotonEscribir from '../mensajes/BotonEscribir'
 import BotonSecundario from '../../components/ui/BotonSecundario'
 import { esCachorro, textoEdad } from '../../lib/adopcionEjemplo'
 import type { Animal } from '../../lib/adopcionEjemplo'
@@ -96,11 +97,21 @@ export default function FichaAdopcion({ animal, onCerrar }: Props) {
           </ul>
         </section>
 
-        <p className="flex items-start gap-2 rounded-2xl border border-dashed border-borde-calido p-3 text-[13px] text-cafe-suave">
-          <ShieldCheck aria-hidden="true" size={16} className="mt-0.5 shrink-0 text-salud-trazo" />
-          El contacto con quien publica será protegido desde Manchitas, sin mostrar teléfonos. Llegará en una próxima
-          versión: por ahora es una vista de ejemplo.
-        </p>
+        {animal.publicadorId ? (
+          <div className="flex flex-col gap-2">
+            <BotonEscribir tipo="adopcion" contextoId={animal.id} etiqueta="Escribir a quien publica" />
+            <p className="flex items-start gap-2 text-[13px] text-cafe-suave">
+              <ShieldCheck aria-hidden="true" size={16} className="mt-0.5 shrink-0 text-salud-trazo" />
+              El contacto es por el chat de Manchitas: nunca se muestran teléfonos.
+            </p>
+          </div>
+        ) : (
+          <p className="flex items-start gap-2 rounded-2xl border border-dashed border-borde-calido p-3 text-[13px] text-cafe-suave">
+            <ShieldCheck aria-hidden="true" size={16} className="mt-0.5 shrink-0 text-salud-trazo" />
+            Este animal es de ejemplo y todavía no tiene una persona a quien escribir. El contacto será por el chat de
+            Manchitas, sin mostrar teléfonos.
+          </p>
+        )}
         <BotonSecundario onClick={() => ref.current?.close()}>Cerrar</BotonSecundario>
       </div>
     </dialog>

@@ -11,11 +11,6 @@
 
 alter table public.adopciones add column publicador_id uuid references public.perfiles (id) on delete set null;
 
-create function public.es_participante(p_conv uuid) returns boolean
-language sql stable security definer set search_path = public as $$
-  select exists (select 1 from public.chat_participantes where conversacion_id = p_conv and usuario_id = (select auth.uid()))
-$$;
-
 create table public.chat_conversaciones (
   id uuid primary key default gen_random_uuid(),
   tipo text not null check (tipo in ('comunidad', 'extraviado', 'adopcion', 'veterinaria')),
@@ -42,6 +37,11 @@ create table public.chat_participantes (
   primary key (conversacion_id, usuario_id)
 );
 create index chat_participantes_usuario_idx on public.chat_participantes (usuario_id);
+
+create function public.es_participante(p_conv uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.chat_participantes where conversacion_id = p_conv and usuario_id = (select auth.uid()))
+$$;
 
 create table public.chat_mensajes (
   id uuid primary key default gen_random_uuid(),

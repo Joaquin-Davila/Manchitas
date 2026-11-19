@@ -82,8 +82,8 @@ function TarjetaAviso({
       <article
         aria-labelledby={`aviso-${aviso.id}`}
         className={`relative flex gap-3.5 rounded-[20px] border p-4 transition-shadow hover:shadow-elevada ${
-          aviso.importante ? 'border-naranja/40 bg-white shadow-suave' : 'border-borde-calido bg-white shadow-suave'
-        } ${aviso.leido ? 'opacity-80' : ''}`}
+          aviso.importante ? 'border-naranja/40 shadow-suave' : 'border-borde-calido shadow-suave'
+        } ${aviso.leido ? 'bg-crema-clara' : 'bg-white'}`}
       >
         {aviso.importante && <span aria-hidden="true" className="absolute inset-y-4 left-0 w-1 rounded-r-full bg-naranja" />}
         <span className={`relative flex size-11 shrink-0 items-center justify-center rounded-2xl ${fondo}`}>

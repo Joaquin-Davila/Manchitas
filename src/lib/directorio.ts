@@ -30,6 +30,8 @@ export type Establecimiento = {
   /** Promedio de 1 a 5 (0 si todavía no tiene reseñas). */
   calificacion: number
   totalResenas: number
+  /** Persona dueña del establecimiento en Manchitas (para el chat); vacío si aún no tiene. */
+  propietarioId?: string
   demo: boolean
 }
 
@@ -75,6 +77,7 @@ type FilaEstablecimiento = {
   foto: string | null
   calificacion: number | string
   total_resenas: number
+  propietario_id: string | null
   es_demo: boolean
 }
 
@@ -93,6 +96,7 @@ function aEstablecimiento(f: FilaEstablecimiento): Establecimiento {
     foto: f.foto ?? undefined,
     calificacion: Number(f.calificacion),
     totalResenas: f.total_resenas,
+    propietarioId: f.propietario_id ?? undefined,
     demo: f.es_demo,
   }
 }

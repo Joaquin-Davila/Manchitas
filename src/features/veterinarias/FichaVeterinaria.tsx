@@ -19,6 +19,7 @@ import { hoyISO } from '../../lib/edad'
 import { useCarga } from '../../lib/useCarga'
 import { useSesion } from '../auth/contextoSesion'
 import { clasesFoco, clasesTarjeta } from '../mascotas/inicio/comun'
+import BotonEscribir from '../mensajes/BotonEscribir'
 import { Estrellas, SelectorEstrellas } from './Estrellas'
 
 function Distribucion({ resenas }: { resenas: Resena[] }) {
@@ -231,6 +232,9 @@ export default function FichaVeterinaria() {
               <Clock aria-hidden="true" size={16} className="mt-0.5 shrink-0 text-cafe-suave" />
               {e.horario || 'Horario por confirmar'}
             </p>
+            {e.propietarioId && sesion?.id !== e.propietarioId && (
+              <BotonEscribir tipo="veterinaria" contextoId={e.id} etiqueta="Escribir a este establecimiento" />
+            )}
             {comoLlegar && (
               <a
                 href={comoLlegar}
