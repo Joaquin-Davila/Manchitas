@@ -1,68 +1,104 @@
-import { CircleAlert } from 'lucide-react'
-import { useSearchParams } from 'react-router-dom'
-import EncabezadoCurvo from '../../components/ui/EncabezadoCurvo'
-import Tarjeta from '../../components/ui/Tarjeta'
+import DocumentoEditorial from '../politicas/DocumentoEditorial'
+import type { Seccion } from '../politicas/DocumentoEditorial'
 
-const secciones = [
+// El texto de cada sección es el del borrador que entregó el equipo: aquí solo cambia la forma de
+// presentarlo. Sigue pendiente de revisión legal conforme a la LFPDPPP.
+const secciones: Seccion[] = [
   {
+    id: 'quienes-somos',
     titulo: 'Quiénes somos',
-    texto:
-      'Manchitas es un proyecto comunitario del equipo 2ISI de la Universidad de Sonora, para promover la tenencia responsable de mascotas en Hermosillo, Sonora. Domicilio y correo de contacto del responsable: [por definir].',
+    bloques: [
+      {
+        tipo: 'p',
+        texto:
+          'Manchitas es un proyecto comunitario del equipo 2ISI de la Universidad de Sonora, para promover la tenencia responsable de mascotas en Hermosillo, Sonora. Domicilio y correo de contacto del responsable: [por definir].',
+      },
+    ],
   },
   {
+    id: 'que-datos-pedimos',
     titulo: 'Qué datos pedimos',
-    texto:
-      'Tu nombre, apellido, número de WhatsApp y correo electrónico; los datos y fotos de tu mascota; su cartilla de vacunación; y, si haces un reporte, la ubicación y la evidencia que adjuntes.',
+    bloques: [
+      {
+        tipo: 'p',
+        texto:
+          'Tu nombre, apellido, número de WhatsApp y correo electrónico; los datos y fotos de tu mascota; su cartilla de vacunación; y, si haces un reporte, la ubicación y la evidencia que adjuntes.',
+      },
+    ],
   },
   {
+    id: 'para-que-los-usamos',
     titulo: 'Para qué los usamos',
-    texto:
-      'Para identificar a tu mascota con un folio y un código QR, permitir que quien la encuentre te contacte, recordarte vacunas y campañas, y canalizar los reportes de maltrato a la autoridad competente.',
+    bloques: [
+      {
+        tipo: 'p',
+        texto:
+          'Para identificar a tu mascota con un folio y un código QR, permitir que quien la encuentre te contacte, recordarte vacunas y campañas, y canalizar los reportes de maltrato a la autoridad competente.',
+      },
+    ],
   },
   {
+    id: 'que-se-muestra-en-publico',
     titulo: 'Qué se muestra en público',
-    texto:
-      'Al escanear el QR o escribir el folio exacto se ve el nombre de tu mascota, sus señas y, como máximo, un apellido tuyo. Tu teléfono nunca se muestra en pantalla: el contacto se hace con un botón de WhatsApp.',
+    bloques: [
+      {
+        tipo: 'p',
+        texto:
+          'Al escanear el QR o escribir el folio exacto se ve el nombre de tu mascota, sus señas y, como máximo, un apellido tuyo.',
+      },
+      {
+        tipo: 'destacado',
+        titulo: 'Tu teléfono no se muestra',
+        texto: 'Tu teléfono nunca se muestra en pantalla: el contacto se hace con un botón de WhatsApp.',
+      },
+    ],
   },
   {
+    id: 'tus-derechos',
     titulo: 'Tus derechos',
-    texto:
-      'Puedes acceder a tus datos, rectificarlos, cancelarlos u oponerte a su uso (derechos ARCO) escribiendo al contacto del responsable. Tu registro y tu código QR son gratuitos.',
+    acordeon: true,
+    bloques: [
+      {
+        tipo: 'p',
+        texto:
+          'Puedes acceder a tus datos, rectificarlos, cancelarlos u oponerte a su uso (derechos ARCO) escribiendo al contacto del responsable. Tu registro y tu código QR son gratuitos.',
+      },
+    ],
   },
   {
+    id: 'como-protegemos-tus-datos',
     titulo: 'Cómo protegemos tus datos',
-    texto:
-      'Tus datos se almacenan cifrados y con control de acceso por fila, de modo que cada persona solo ve la información que le corresponde. No vendemos tus datos.',
+    acordeon: true,
+    bloques: [
+      {
+        tipo: 'p',
+        texto:
+          'Tus datos se almacenan cifrados y con control de acceso por fila, de modo que cada persona solo ve la información que le corresponde. No vendemos tus datos.',
+      },
+    ],
   },
   {
+    id: 'cambios',
     titulo: 'Cambios a este aviso',
-    texto: 'Si el aviso cambia, lo publicaremos aquí antes de que entre en vigor.',
+    acordeon: true,
+    bloques: [{ tipo: 'p', texto: 'Si el aviso cambia, lo publicaremos aquí antes de que entre en vigor.' }],
   },
 ]
 
 export default function Privacidad() {
-  // Se abre desde el registro o desde el reporte ciudadano: el botón de regreso vuelve al origen.
-  const [params] = useSearchParams()
-  const atras = params.get('desde') === 'reportar' ? '/reportar' : '/registro'
   return (
-    <>
-      <EncabezadoCurvo titulo="Aviso de privacidad" atras={atras} />
-      <main className="flex flex-col gap-4 px-5 pb-10 pt-6">
-        <Tarjeta className="flex items-start gap-3 bg-aviso-fondo p-4 text-sm">
-          <CircleAlert aria-hidden="true" size={20} className="mt-0.5 shrink-0 text-naranja-sombra" />
-          <p>
-            <strong>Borrador pendiente de revisión legal.</strong> Este texto aún no es el aviso de
-            privacidad definitivo conforme a la LFPDPPP.
-          </p>
-        </Tarjeta>
-
-        {secciones.map(({ titulo, texto }) => (
-          <section key={titulo}>
-            <h2 className="font-titulo text-base font-semibold">{titulo}</h2>
-            <p className="mt-1 text-sm text-cafe-suave">{texto}</p>
-          </section>
-        ))}
-      </main>
-    </>
+    <DocumentoEditorial
+      titulo="Aviso de privacidad"
+      descripcion="Qué datos recibimos, para qué los usamos, qué se ve en público y cómo ejercer tus derechos."
+      actualizado="noviembre de 2026"
+      borrador="Este texto aún no es el aviso de privacidad definitivo conforme a la LFPDPPP: falta la revisión de un abogado y definir el domicilio y el correo del responsable."
+      secciones={secciones}
+      fuentes={[
+        {
+          texto:
+            'Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP), versión vigente desde marzo de 2025. Autoridad: Secretaría Anticorrupción y Buen Gobierno.',
+        },
+      ]}
+    />
   )
 }

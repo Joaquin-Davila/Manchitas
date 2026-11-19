@@ -49,6 +49,16 @@ Un commit por sub-paso, probados en navegador a 390, 768 y 1280 px.
 | 12e | **Fotos huérfanas:** el cliente borra el archivo anterior al borrar una mascota o reemplazar su foto o la de la cartilla; script manual `supabase/scripts/huerfanas.sql` que lista las huérfanas de los 3 buckets para borrarlas con el CLI y confirmación. Sin función programada (queda para el piloto) | ⬜ |
 | 12f | **Privacidad (LFPDPPP):** revisar el aviso contra los elementos legales (responsable, finalidades, datos, derechos ARCO, transferencias, cambios), minimización de datos, terceros (los mosaicos de OpenStreetMap ven la IP) y limpieza local al cerrar sesión. Resultado en `docs/PRIVACIDAD.md`. **No es validación legal:** el aviso sigue en borrador hasta que lo revise un abogado | ⬜ |
 
+## Actualización integral (bloques A–D)
+Trabajo posterior al paso 12d, por bloques. Un commit por bloque; cada escritura al proyecto remoto necesita confirmación explícita.
+
+| Bloque | Qué | Estado |
+|---|---|---|
+| A | **Base de la demo.** Migración `20261119000100_comunidad_base.sql` (perfil con ciudad, colonia y tipo de usuario; tablas `establecimientos`, `anuncios`, `campanas`, `adopciones`, `publicaciones`; función `indicadores_comunidad()`; RLS de solo lectura). Seed reproducible y cuenta demo (`supabase/seed/`, ver `docs/DEMO.md`). Inicio con publicidad "Patrocinado" desde la base, actividad comunitaria, próximos eventos e indicadores. Inicio de sesión con acceso demo y recuperación de contraseña. Registro en 5 pasos. Políticas en estructura editorial (términos, privacidad, cookies, reglamento). `rls.sql` ampliado. **Resultado:** migración y seed aplicados al proyecto remoto; `rls.sql` 59/59; probado con la cuenta demo (9 mascotas con foto) a 390 y 1280 px, 0 hallazgos con axe en Inicio y en las pantallas de cuenta y políticas. Pendiente de configuración externa: Redirect URLs de Supabase para recuperar contraseña (ver `docs/DEMO.md`) | ✅ |
+| B | Veterinarias (perfiles, promociones, reseñas verificadas y no verificadas con respuestas), Manchitas Solidario como plataforma de campañas (modo demostración, sin pagos reales), historial de salud ampliado | ⬜ |
+| C | Mascotas extraviadas y foros automáticos al día 5 (`pg_cron` ya disponible en el proyecto), avistamientos y contacto protegido | ⬜ |
+| D | Chat con Realtime y RLS (bloqueo, reportes, adjuntos) y centro de notificaciones | ⬜ |
+
 ### Cómo dar el rol de autoridad (manual)
 La persona primero crea su cuenta normal. Después, con el CLI vinculado y tu confirmación (`--yes`):
 

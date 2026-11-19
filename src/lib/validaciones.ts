@@ -28,8 +28,30 @@ export function validarCorreo(valor: string): string | null {
   return null
 }
 
+/** Requisitos de una contraseña nueva, en el orden en que se muestran al registrarse. */
+export function requisitosContrasena(valor: string): { texto: string; cumple: boolean }[] {
+  return [
+    { texto: 'Al menos 8 caracteres', cumple: valor.length >= 8 },
+    { texto: 'Una letra', cumple: /\p{L}/u.test(valor) },
+    { texto: 'Un número', cumple: /\d/.test(valor) },
+  ]
+}
+
 export function validarContrasenaNueva(valor: string): string | null {
-  return valor.length >= 8 ? null : 'Usa al menos 8 caracteres.'
+  return requisitosContrasena(valor).every((r) => r.cumple)
+    ? null
+    : 'Usa al menos 8 caracteres, con una letra y un número.'
+}
+
+export function validarConfirmacionContrasena(valor: string, contrasena: string): string | null {
+  if (!valor) return 'Escribe de nuevo tu contraseña.'
+  return valor === contrasena ? null : 'Las contraseñas no coinciden.'
+}
+
+export function validarCiudad(valor: string): string | null {
+  const texto = valor.trim()
+  if (!texto) return 'Escribe tu ciudad.'
+  return texto.length > 80 ? 'Máximo 80 caracteres.' : null
 }
 
 export function validarContrasenaActual(valor: string): string | null {

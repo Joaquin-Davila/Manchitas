@@ -3,12 +3,16 @@ import Huella from '../../components/ui/Huella'
 import { hoyISO } from '../../lib/edad'
 import { useSesion } from '../auth/contextoSesion'
 import { useCartilla } from '../salud/useCartilla'
+import ActividadComunitaria from './inicio/ActividadComunitaria'
 import Aliados from './inicio/Aliados'
 import CadaHuella from './inicio/CadaHuella'
 import ComunidadCerca from './inicio/ComunidadCerca'
 import Descubre from './inicio/Descubre'
 import { HeroCargando, HeroMascota, HeroSinMascota } from './inicio/HeroMascota'
+import Indicadores from './inicio/Indicadores'
+import Patrocinado from './inicio/Patrocinado'
 import ResumenSalud from './inicio/ResumenSalud'
+import { useInicioComunidad } from './inicio/useInicioComunidad'
 import { Aparecer, clasesTarjeta } from './inicio/comun'
 import { useMascotas } from './useMascotas'
 
@@ -20,6 +24,8 @@ export default function Inicio() {
   const mascota = mascotas[0]
   const salud = useCartilla(mascota?.id)
   const [hoy] = useState(() => hoyISO())
+  const comunidad = useInicioComunidad(hoy)
+  const datos = comunidad.datos
   const [fechaHoy] = useState(() => {
     const texto = fechaLarga.format(new Date())
     return texto.charAt(0).toUpperCase() + texto.slice(1)
@@ -39,7 +45,7 @@ export default function Inicio() {
           </p>
         </div>
         <p className="rounded-full border border-borde-calido bg-white px-3 py-1 text-[13px] font-semibold text-cafe-suave">
-          {fechaHoy}
+          {fechaHoy} · Hermosillo, Sonora
         </p>
       </Aparecer>
 
@@ -72,9 +78,27 @@ export default function Inicio() {
 
       <Descubre />
 
+      {datos && datos.anuncios.length > 0 && (
+        <Aparecer retraso={260}>
+          <Patrocinado anuncios={datos.anuncios} hoy={hoy} />
+        </Aparecer>
+      )}
+
       <Aparecer retraso={320}>
-        <ComunidadCerca hoy={hoy} />
+        <ComunidadCerca hoy={hoy} campanas={datos?.campanas ?? []} />
       </Aparecer>
+
+      {datos && (
+        <Aparecer retraso={360}>
+          <ActividadComunitaria publicaciones={datos.publicaciones} adopciones={datos.adopciones} />
+        </Aparecer>
+      )}
+
+      {datos?.indicadores && (
+        <Aparecer retraso={400}>
+          <Indicadores datos={datos.indicadores} />
+        </Aparecer>
+      )}
 
       <Aparecer retraso={380}>
         {/* Sin directorio real todavía: se muestra el estado de descubrimiento. */}

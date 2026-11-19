@@ -8,6 +8,10 @@ export type Sesion = {
   correo: string
   /** 10 dígitos de WhatsApp; las cuentas anteriores a este campo no lo tienen. */
   telefono?: string
+  ciudad?: string
+  colonia?: string
+  /** Cómo se presentó al registrarse. NO da permisos: los roles con privilegios son `rol`. */
+  tipoUsuario?: 'tutor' | 'rescatista' | 'ciudadano'
   /** Solo Supabase lo trae. Sin él (modo local) se trata como tutor. El servidor decide qué puede leer cada rol. */
   rol?: 'tutor' | 'autoridad'
 }
@@ -21,6 +25,10 @@ export type ValorSesion = {
   /** Si la confirmación de correo está activa, no hay sesión hasta confirmar. */
   registrar: (datos: Sesion, contrasena: string) => Promise<{ requiereConfirmacion: boolean }>
   cerrarSesion: () => Promise<void>
+  /** Envía el enlace para elegir otra contraseña. No revela si el correo tiene cuenta. */
+  recuperarContrasena: (correo: string) => Promise<void>
+  /** Con la sesión del enlace de recuperación, fija la contraseña nueva. */
+  actualizarContrasena: (contrasena: string) => Promise<void>
 }
 
 export const ContextoSesion = createContext<ValorSesion | null>(null)

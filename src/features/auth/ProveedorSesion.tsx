@@ -70,6 +70,11 @@ function ProveedorSesionLocal({ children }: { children: ReactNode }) {
         guardar(CLAVE_SESION, null)
         setSesion(null)
       },
+      // Modo local: no hay correo ni contraseñas reales.
+      async recuperarContrasena() {},
+      async actualizarContrasena() {
+        throw new Error('La recuperación de contraseña requiere conectar Supabase.')
+      },
     }),
     [sesion],
   )

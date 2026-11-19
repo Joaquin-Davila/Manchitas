@@ -7,6 +7,7 @@ import LayoutAuth from '../features/auth/LayoutAuth'
 import Registro from '../features/auth/Registro'
 import RutaProtegida from '../features/auth/RutaProtegida'
 import RutaAutoridad from '../features/autoridad/RutaAutoridad'
+import LayoutPoliticas from '../features/politicas/LayoutPoliticas'
 import Inicio from '../features/mascotas/Inicio'
 import ListaMascotas from '../features/mascotas/ListaMascotas'
 import Layout from './Layout'
@@ -29,6 +30,10 @@ const NuevaMascota = lazy(() => import('../features/mascotas/NuevaMascota'))
 const EditarMascota = lazy(() => import('../features/mascotas/EditarMascota'))
 const Salud = lazy(() => import('../features/salud/Salud'))
 const Privacidad = lazy(() => import('../features/auth/Privacidad'))
+const Terminos = lazy(() => import('../features/politicas/Terminos'))
+const Cookies = lazy(() => import('../features/politicas/Cookies'))
+const RecuperarContrasena = lazy(() => import('../features/auth/RecuperarContrasena'))
+const RestablecerContrasena = lazy(() => import('../features/auth/RestablecerContrasena'))
 
 // Pantallas que aún no existen: solo muestran el encabezado correcto.
 const pendientes = rutas.filter((r) => r.path !== '/' && r.path !== '/mascotas' && r.path !== '/salud' && r.path !== '/avisos' && r.path !== '/comunidad')
@@ -43,12 +48,20 @@ export default function App() {
         <Route path="bienvenida" element={<Bienvenida />} />
         <Route path="iniciar-sesion" element={<IniciarSesion />} />
         <Route path="registro" element={<Registro />} />
-        <Route path="privacidad" element={<Privacidad />} />
+        <Route path="recuperar" element={<RecuperarContrasena />} />
+        <Route path="restablecer" element={<RestablecerContrasena />} />
         <Route path="buscar" element={<BuscarPorId />} />
         <Route path="m/:token" element={<PerfilPublico />} />
         <Route path="reportar" element={<NuevoReporte />} />
         <Route path="reportar/enviado" element={<Confirmacion />} />
         <Route path="reportar/seguimiento" element={<Seguimiento />} />
+      </Route>
+
+      {/* Documentos de políticas: públicos, en una columna editorial ancha y sin barra de la app. */}
+      <Route element={<LayoutPoliticas />}>
+        <Route path="terminos" element={<Terminos />} />
+        <Route path="privacidad" element={<Privacidad />} />
+        <Route path="cookies" element={<Cookies />} />
         <Route path="reglamento" element={<Reglamento />} />
       </Route>
 

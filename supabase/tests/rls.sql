@@ -214,6 +214,68 @@ begin
     and pg_temp.como('authenticated', b, $q$ select count(*) from storage.objects
       where bucket_id = 'reportes-evidencia' $q$) = '0');
 
+  -- Bloque A: comunidad y perfil ampliado ------------------------------------------------------
+  insert into public.establecimientos (id, nombre, tipo, es_demo)
+    values ('00000000-0000-4000-8000-0000000000e1', 'RLS-vet', 'veterinaria', true);
+  insert into public.anuncios (establecimiento_id, titulo, vigente_desde, vigente_hasta, activo) values
+    ('00000000-0000-4000-8000-0000000000e1', 'RLS-vigente', current_date - 1, current_date + 5, true),
+    ('00000000-0000-4000-8000-0000000000e1', 'RLS-vencido', current_date - 10, current_date - 1, true),
+    ('00000000-0000-4000-8000-0000000000e1', 'RLS-apagado', current_date - 1, current_date + 5, false);
+  insert into public.campanas (titulo, tipo, fecha) values ('RLS-campana', 'vacunacion', current_date + 3);
+  insert into public.adopciones (nombre, especie, sexo, edad_meses, tamano) values ('RLS-adopta', 'gato', 'Hembra', 6, 'Chico');
+  insert into public.publicaciones (autor_nombre, texto) values ('RLS', 'RLS-publicacion');
+
+  res := res || pg_temp.fila('un tutor con sesión lee establecimientos, campañas, adopciones y publicaciones',
+    pg_temp.como('authenticated', b, $q$ select count(*) from public.establecimientos where nombre = 'RLS-vet' $q$) = '1'
+    and pg_temp.como('authenticated', b, $q$ select count(*) from public.campanas where titulo = 'RLS-campana' $q$) = '1'
+    and pg_temp.como('authenticated', b, $q$ select count(*) from public.adopciones where nombre = 'RLS-adopta' $q$) = '1'
+    and pg_temp.como('authenticated', b, $q$ select count(*) from public.publicaciones where texto = 'RLS-publicacion' $q$) = '1');
+  res := res || pg_temp.fila('solo se ven los anuncios activos y vigentes (no vencidos ni apagados)',
+    pg_temp.como('authenticated', b, $q$ select string_agg(titulo, ',') from public.anuncios where titulo like 'RLS-%' $q$) = 'RLS-vigente');
+  res := res || pg_temp.fila('anon no lee ninguna de las tablas de comunidad',
+    pg_temp.como('anon', null, 'select count(*) from public.establecimientos') = 'ERROR:42501'
+    and pg_temp.como('anon', null, 'select count(*) from public.anuncios') = 'ERROR:42501'
+    and pg_temp.como('anon', null, 'select count(*) from public.campanas') = 'ERROR:42501'
+    and pg_temp.como('anon', null, 'select count(*) from public.adopciones') = 'ERROR:42501'
+    and pg_temp.como('anon', null, 'select count(*) from public.publicaciones') = 'ERROR:42501');
+  res := res || pg_temp.fila('un tutor no puede insertar en las tablas de comunidad',
+    pg_temp.como('authenticated', b, $q$ with i as (insert into public.anuncios (establecimiento_id, titulo, vigente_hasta)
+      values ('00000000-0000-4000-8000-0000000000e1', 'X', current_date + 1) returning 1) select count(*) from i $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', b, $q$ with i as (insert into public.publicaciones (autor_nombre, texto)
+      values ('X', 'X') returning 1) select count(*) from i $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', b, $q$ with i as (insert into public.establecimientos (nombre, tipo)
+      values ('X', 'tienda') returning 1) select count(*) from i $q$) = 'ERROR:42501');
+  res := res || pg_temp.fila('un tutor no puede editar ni borrar publicaciones, anuncios ni adopciones',
+    pg_temp.como('authenticated', b, $q$ with u as (update public.publicaciones set texto = 'X' returning 1) select count(*) from u $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', b, $q$ with d as (delete from public.anuncios returning 1) select count(*) from d $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', b, $q$ with u as (update public.adopciones set verificado = true returning 1) select count(*) from u $q$) = 'ERROR:42501');
+  res := res || pg_temp.fila('indicadores_comunidad: solo con sesión, y solo devuelve conteos',
+    pg_temp.como('authenticated', b, 'select (indicadores_comunidad()->>''establecimientos'')::int >= 1') = 'true'
+    and pg_temp.como('anon', null, 'select indicadores_comunidad()::text') = 'ERROR:42501');
+
+  res := res || pg_temp.fila('un tutor puede editar su ciudad, colonia y tipo de usuario',
+    pg_temp.como('authenticated', b, format($q$ with u as (update public.perfiles set ciudad = 'Hermosillo', colonia = 'Pitic',
+      tipo_usuario = 'rescatista' where id = %L returning 1) select count(*) from u $q$, b)) = '1');
+  res := res || pg_temp.fila('un tutor NO puede cambiarse es_demo ni el rol',
+    pg_temp.como('authenticated', b, format($q$ with u as (update public.perfiles set es_demo = true where id = %L returning 1)
+      select count(*) from u $q$, b)) = 'ERROR:42501'
+    and pg_temp.como('authenticated', b, format($q$ with u as (update public.perfiles set rol = 'autoridad' where id = %L returning 1)
+      select count(*) from u $q$, b)) = 'ERROR:42501');
+  res := res || pg_temp.fila('el tipo de usuario no es un rol: no da acceso a reportes',
+    pg_temp.como('authenticated', b, 'select count(*) from public.reportes') = '0');
+
+  -- El perfil sale de los metadatos del registro: tipo inválido -> tutor; rol y es_demo se ignoran.
+  insert into auth.users (id, email, raw_user_meta_data) values
+    ('00000000-0000-4000-8000-0000000000c1', 'rls-c@prueba.invalid',
+     '{"nombre":"Cris","tipo_usuario":"administrador","rol":"autoridad","es_demo":true,"ciudad":"Cajeme","colonia":"Centro"}'),
+    ('00000000-0000-4000-8000-0000000000d1', 'rls-d@prueba.invalid', '{"nombre":"Dani","tipo_usuario":"rescatista"}');
+  res := res || pg_temp.fila('registro: un tipo de usuario inválido cae a tutor y el rol/es_demo de los metadatos se ignoran',
+    (select tipo_usuario = 'tutor' and rol = 'tutor' and not es_demo and ciudad = 'Cajeme' and colonia = 'Centro'
+       from public.perfiles where id = '00000000-0000-4000-8000-0000000000c1'));
+  res := res || pg_temp.fila('registro: tipo rescatista válido y ciudad por defecto Hermosillo',
+    (select tipo_usuario = 'rescatista' and ciudad = 'Hermosillo' and colonia = ''
+       from public.perfiles where id = '00000000-0000-4000-8000-0000000000d1'));
+
   -- Resultado: el error revierte todo lo creado arriba.
   -- Resumen corto (el CLI recorta mensajes largos): cuántas pasaron y, completas, las que fallaron.
   raise exception E'PRUEBA RLS (todo se revierte): % OK, % con FALLA.%',

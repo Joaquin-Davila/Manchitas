@@ -10,6 +10,17 @@ const VERSION_AVISO = 'borrador-1'
 
 type Usuario = { id: string; correo: string; meta: Record<string, unknown> }
 
+type PerfilFila = {
+  nombre: string
+  apellido: string | null
+  telefono: string | null
+  rol: string
+  ciudad: string | null
+  colonia: string | null
+  tipo_usuario: string | null
+}
+const TIPOS_USUARIO = ['tutor', 'rescatista', 'ciudadano']
+
 /** Traduce los errores de Supabase Auth a mensajes en español para quien usa la app. */
 function mensajeError(error: { message: string; code?: string; status?: number }): string {
   const texto = `${error.code ?? ''} ${error.message}`.toLowerCase()
@@ -66,7 +77,7 @@ export default function ProveedorSesionSupabase({ children }: { children: ReactN
       correo: usuario.correo,
       telefono: texto(usuario.meta.telefono) || undefined,
     }
-    const abrir = (data: { nombre: string; apellido: string | null; telefono: string | null; rol: string } | null) => {
+    const abrir = (data: PerfilFila | null) => {
       if (!vigente) return
       setPerfil(
         data
@@ -75,6 +86,11 @@ export default function ProveedorSesionSupabase({ children }: { children: ReactN
               nombre: data.nombre,
               apellido: data.apellido ?? '',
               telefono: data.telefono ?? undefined,
+              ciudad: data.ciudad ?? undefined,
+              colonia: data.colonia ?? undefined,
+              tipoUsuario: TIPOS_USUARIO.includes(data.tipo_usuario as never)
+                ? (data.tipo_usuario as NonNullable<Sesion['tipoUsuario']>)
+                : 'tutor',
               rol: data.rol === 'autoridad' ? 'autoridad' : 'tutor',
             }
           : respaldo,
@@ -111,6 +127,9 @@ export default function ProveedorSesionSupabase({ children }: { children: ReactN
               nombre: datos.nombre,
               apellido: datos.apellido,
               telefono: datos.telefono ?? '',
+              ciudad: datos.ciudad ?? 'Hermosillo',
+              colonia: datos.colonia ?? '',
+              tipo_usuario: datos.tipoUsuario ?? 'tutor',
               acepto_privacidad: true,
               version_aviso: VERSION_AVISO,
             },
@@ -129,6 +148,16 @@ export default function ProveedorSesionSupabase({ children }: { children: ReactN
         } catch {
           // Sin Cache API (o bloqueada): no hay nada que borrar.
         }
+      },
+      async recuperarContrasena(correo) {
+        const { error } = await clienteRemoto().auth.resetPasswordForEmail(correo, {
+          redirectTo: `${window.location.origin}/restablecer`,
+        })
+        if (error) throw new Error(mensajeError(error))
+      },
+      async actualizarContrasena(contrasena) {
+        const { error } = await clienteRemoto().auth.updateUser({ password: contrasena })
+        if (error) throw new Error(mensajeError(error))
       },
     }
   }, [usuario, perfil])

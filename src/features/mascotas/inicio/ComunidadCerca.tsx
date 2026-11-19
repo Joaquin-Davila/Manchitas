@@ -2,7 +2,7 @@ import { ArrowRight, CalendarDays, HeartHandshake, Megaphone, ShieldCheck, Steth
 import { Link } from 'react-router-dom'
 import BotonSecundario from '../../../components/ui/BotonSecundario'
 import Huella from '../../../components/ui/Huella'
-import { campanasProximas } from '../../../lib/campanasEjemplo'
+import type { CampanaComunidad } from '../../../lib/comunidad'
 import { formatearFecha } from '../../../lib/fechas'
 import { clasesFoco, clasesTarjeta } from './comun'
 
@@ -47,8 +47,9 @@ function MapaIlustrado() {
   )
 }
 
-export default function ComunidadCerca({ hoy }: { hoy: string }) {
-  const siguiente = campanasProximas(hoy)[0]
+export default function ComunidadCerca({ hoy, campanas }: { hoy: string; campanas: CampanaComunidad[] }) {
+  const siguiente = campanas[0]
+  const otras = campanas.slice(1, 4)
 
   return (
     <section aria-labelledby="titulo-comunidad" className={`overflow-hidden ${clasesTarjeta}`}>
@@ -84,7 +85,7 @@ export default function ComunidadCerca({ hoy }: { hoy: string }) {
             <span className="min-w-0 flex-1">
               <span className="flex flex-wrap items-center gap-x-2 text-[13px] font-semibold text-cafe-suave">
                 Próxima campaña
-                <span className="rounded-full bg-white px-2 py-px text-[11px] text-cafe">Dato de ejemplo</span>
+                {siguiente?.demo && <span className="rounded-full bg-white px-2 py-px text-[11px] text-cafe">Dato de ejemplo</span>}
               </span>
               <span className="block truncate font-semibold text-cafe">
                 {siguiente ? siguiente.titulo : 'Sin campañas próximas'}
@@ -97,6 +98,20 @@ export default function ComunidadCerca({ hoy }: { hoy: string }) {
             </span>
             <ArrowRight aria-hidden="true" size={18} className="shrink-0 text-naranja transition-transform motion-safe:group-hover:translate-x-1" />
           </Link>
+
+          {otras.length > 0 && (
+            <div>
+              <h3 className="text-[13px] font-semibold text-cafe-suave">Próximos eventos</h3>
+              <ul className="m-0 mt-1.5 flex list-none flex-col gap-1.5 p-0">
+                {otras.map((c) => (
+                  <li key={c.id} className="flex items-baseline justify-between gap-3 text-sm">
+                    <span className="min-w-0 truncate font-semibold text-cafe">{c.titulo}</span>
+                    <span className="shrink-0 text-cafe-suave">{formatearFecha(c.fecha, c.fecha.slice(0, 4) !== hoy.slice(0, 4))}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <BotonSecundario to="/comunidad" className="mt-auto md:w-fit">
             Explorar mapa
