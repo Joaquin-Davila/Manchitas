@@ -20,8 +20,20 @@ function FotoMascota({ mascota, className }: { mascota: Mascota; className: stri
   )
 }
 
-export function HeroMascota({ mascotas }: { mascotas: Mascota[] }) {
-  const [principal, ...otras] = mascotas
+/**
+ * La mascota elegida se ve en grande aquí mismo. El selector de abajo la cambia sin salir de Inicio
+ * (la ficha completa y la cartilla siguen a un toque en "Ver perfil y cartilla").
+ */
+export function HeroMascota({
+  mascotas,
+  seleccionada,
+  onSeleccionar,
+}: {
+  mascotas: Mascota[]
+  seleccionada: Mascota
+  onSeleccionar: (id: string) => void
+}) {
+  const principal = seleccionada
   const detalle = [NOMBRE_ESPECIE[principal.especie], principal.raza, textoEdad(principal.nacimiento, undefined, principal.especie)]
     .filter(Boolean)
     .join(' · ')
@@ -29,9 +41,10 @@ export function HeroMascota({ mascotas }: { mascotas: Mascota[] }) {
   return (
     <div className="flex flex-col gap-3">
       <Link
+        key={principal.id}
         to={`/mascotas/${principal.id}`}
         aria-label={`Ver perfil y cartilla de ${principal.nombre}`}
-        className={`group relative grid grid-cols-1 overflow-hidden md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] ${clasesTarjeta} ${clasesElevar} ${clasesFoco}`}
+        className={`aparecer group relative grid grid-cols-1 overflow-hidden md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] ${clasesTarjeta} ${clasesElevar} ${clasesFoco}`}
       >
         <div className="relative overflow-hidden">
           <FotoMascota
@@ -75,22 +88,34 @@ export function HeroMascota({ mascotas }: { mascotas: Mascota[] }) {
       </Link>
 
       <nav aria-label="Tus mascotas" className="flex flex-wrap items-center gap-2">
-        {otras.length > 0 && <span className="text-sm text-cafe-suave">También en casa:</span>}
-        {otras.slice(0, 4).map((m) => (
-          <Link
-            key={m.id}
-            to={`/mascotas/${m.id}`}
-            className={`flex min-h-11 items-center gap-2 rounded-full border border-borde-calido bg-white py-1 pl-1 pr-3.5 text-sm font-semibold text-cafe transition-colors hover:bg-amarillo-suave ${clasesFoco}`}
-          >
-            <FotoMascota mascota={m} className="size-9 shrink-0 rounded-full [&_svg]:size-5" />
-            {m.nombre}
-          </Link>
-        ))}
+        {mascotas.length > 1 && <span className="text-sm text-cafe-suave">También en casa:</span>}
+        {mascotas.length > 1 &&
+          mascotas.map((m) => {
+            const activa = m.id === principal.id
+            return (
+              <button
+                key={m.id}
+                type="button"
+                aria-pressed={activa}
+                onClick={() => onSeleccionar(m.id)}
+                className={`flex min-h-11 items-center gap-2 rounded-full border py-1 pl-1 pr-3.5 text-sm font-semibold transition-colors ${clasesFoco} ${
+                  activa ? 'border-naranja bg-naranja text-white shadow-boton' : 'border-borde-calido bg-white text-cafe hover:bg-amarillo-suave'
+                }`}
+              >
+                <FotoMascota mascota={m} className="size-9 shrink-0 rounded-full [&_svg]:size-5" />
+                {m.nombre}
+              </button>
+            )
+          })}
+        {/* Aviso para lectores de pantalla cuando cambia la mascota mostrada. */}
+        <span role="status" className="sr-only">
+          {`Mostrando a ${principal.nombre}`}
+        </span>
         <Link
-          to={otras.length > 0 ? '/mascotas' : '/mascotas/nueva'}
-          className={`flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-naranja hover:bg-amarillo-suave ${clasesFoco}`}
+          to={mascotas.length > 1 ? '/mascotas' : '/mascotas/nueva'}
+          className={`flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-naranja-sombra hover:bg-amarillo-suave ${clasesFoco}`}
         >
-          {otras.length > 0 ? (
+          {mascotas.length > 1 ? (
             <>
               Ver todas ({mascotas.length})
               <ArrowRight aria-hidden="true" size={16} />

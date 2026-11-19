@@ -22,7 +22,9 @@ const fechaLarga = new Intl.DateTimeFormat('es-MX', { weekday: 'long', day: 'num
 export default function Inicio() {
   const { sesion } = useSesion()
   const { mascotas, cargando, error } = useMascotas()
-  const mascota = mascotas[0]
+  // La mascota que se ve en grande: la que elige la persona en el selector, o la primera.
+  const [elegidaId, setElegidaId] = useState<string>()
+  const mascota = mascotas.find((m) => m.id === elegidaId) ?? mascotas[0]
   const salud = useCartilla(mascota?.id)
   const [hoy] = useState(() => hoyISO())
   const comunidad = useInicioComunidad(hoy)
@@ -61,7 +63,7 @@ export default function Inicio() {
               </p>
             </div>
           ) : mascota ? (
-            <HeroMascota mascotas={mascotas} />
+            <HeroMascota mascotas={mascotas} seleccionada={mascota} onSeleccionar={setElegidaId} />
           ) : (
             <HeroSinMascota />
           )}
