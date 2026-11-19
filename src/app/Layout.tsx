@@ -7,7 +7,7 @@ import { rutas } from './rutas'
 
 // Pantallas con rejillas: usan todo el ancho en escritorio. Las demás se quedan en una columna
 // legible de 720 px.
-const ANCHAS = ['/', '/mascotas', '/comunidad']
+const ANCHAS = ['/', '/mascotas', '/comunidad', '/salud', '/avisos']
 
 export default function Layout() {
   const { pathname } = useLocation()

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import type { LinkProps } from 'react-router-dom'
 
 const clases =
-  'flex h-[50px] w-full items-center justify-center rounded-boton bg-naranja px-6 text-[15px] font-semibold text-white shadow-boton transition-transform active:translate-y-[3px] active:shadow-[0_1px_0_#8f4304] disabled:opacity-60 disabled:active:translate-y-0 disabled:active:shadow-boton'
+  'flex h-[50px] w-full items-center justify-center rounded-boton bg-naranja px-6 text-[15px] font-semibold text-white shadow-boton transition-transform active:translate-y-[3px] active:shadow-[0_1px_0_#2c5582] disabled:opacity-60 disabled:active:translate-y-0 disabled:active:shadow-boton'
 
 // Se muestra como enlace si recibe `to`; si no, como botón.
 type PropsEnlace = LinkProps & { to: LinkProps['to'] }

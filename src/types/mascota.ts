@@ -1,8 +1,9 @@
+export type Especie = 'perro' | 'gato'
+
 export type Mascota = {
   /** Identificador interno; solo se usa dentro de la cuenta del tutor. */
   id: string
-  /** Hoy solo perros; el campo deja lista la ampliación a gatos. */
-  especie: 'perro'
+  especie: Especie
   nombre: string
   raza: string
   /** "AAAA" si la edad es aproximada o "AAAA-MM-DD" si se conoce la fecha exacta. */
@@ -34,5 +35,5 @@ export type PerfilPublico = Pick<Mascota, 'nombre' | 'raza' | 'nacimiento' | 'se
 
 export type DatosMascota = Pick<
   Mascota,
-  'nombre' | 'raza' | 'nacimiento' | 'senas' | 'nota' | 'fotoUrl'
+  'especie' | 'nombre' | 'raza' | 'nacimiento' | 'senas' | 'nota' | 'fotoUrl'
 >

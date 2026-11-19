@@ -19,13 +19,14 @@ const PanelAutoridad = lazy(() => import('../features/autoridad/PanelAutoridad')
 const Comunidad = lazy(() => import('../features/comunidad/Comunidad'))
 const BuscarPorId = lazy(() => import('../features/publico/BuscarPorId'))
 const PerfilPublico = lazy(() => import('../features/publico/PerfilPublico'))
-const CentroReportes = lazy(() => import('../features/reportes/CentroReportes'))
+const CentroAvisos = lazy(() => import('../features/avisos/CentroAvisos'))
 const Confirmacion = lazy(() => import('../features/reportes/Confirmacion'))
 const NuevoReporte = lazy(() => import('../features/reportes/NuevoReporte'))
 const Reglamento = lazy(() => import('../features/reportes/Reglamento'))
 const Seguimiento = lazy(() => import('../features/reportes/Seguimiento'))
 const FichaMascota = lazy(() => import('../features/mascotas/FichaMascota'))
 const NuevaMascota = lazy(() => import('../features/mascotas/NuevaMascota'))
+const EditarMascota = lazy(() => import('../features/mascotas/EditarMascota'))
 const Salud = lazy(() => import('../features/salud/Salud'))
 const Privacidad = lazy(() => import('../features/auth/Privacidad'))
 
@@ -61,9 +62,10 @@ export default function App() {
           <Route path="mascotas" element={<ListaMascotas />} />
           <Route path="mascotas/nueva" element={<NuevaMascota />} />
           <Route path="mascotas/:id" element={<FichaMascota />} />
+          <Route path="mascotas/:id/editar" element={<EditarMascota />} />
           <Route path="comunidad" element={<Comunidad />} />
           <Route path="salud" element={<Salud />} />
-          <Route path="avisos" element={<CentroReportes />} />
+          <Route path="avisos" element={<CentroAvisos />} />
           {pendientes.map((r) => (
             <Route key={r.path} path={r.path} element={<PantallaVacia />} />
           ))}

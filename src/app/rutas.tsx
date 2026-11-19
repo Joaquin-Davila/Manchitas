@@ -17,6 +17,6 @@ export const rutas: Ruta[] = [
   { path: '/comunidad', titulo: 'Comunidad', etiqueta: 'Comunidad', icono: Users },
   { path: '/', titulo: 'Inicio', etiqueta: 'Inicio', icono: House },
   { path: '/salud', titulo: 'Salud', etiqueta: 'Salud', icono: Heart },
-  // La pestaña Avisos lleva el encabezado "Reportes".
-  { path: '/avisos', titulo: 'Reportes', etiqueta: 'Avisos', icono: Bell },
+  // Avisos: centro de avisos calculados y, abajo, los reportes ciudadanos.
+  { path: '/avisos', titulo: 'Avisos', etiqueta: 'Avisos', icono: Bell },
 ]

@@ -35,7 +35,7 @@ function Patron() {
 
 export default function EncabezadoCurvo({ titulo, atras }: Props) {
   return (
-    <header className="relative overflow-hidden rounded-b-[48px] border-b-[6px] border-amarillo-borde bg-amarillo px-5 pb-9 pt-5">
+    <header className="relative overflow-hidden rounded-b-[48px] bg-amarillo shadow-suave px-5 pb-9 pt-5">
       <Patron />
       <div className="relative grid grid-cols-[44px_1fr_44px] items-center">
         {atras ? (

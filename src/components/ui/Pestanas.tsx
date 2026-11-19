@@ -1,6 +1,7 @@
-import type { KeyboardEvent } from 'react'
+import type { KeyboardEvent, ReactNode } from 'react'
 
-type Pestana = { id: string; etiqueta: string }
+/** `icono` es opcional; las pantallas que no lo pasan se ven igual que antes. */
+type Pestana = { id: string; etiqueta: string; icono?: ReactNode }
 
 type Props = {
   pestanas: Pestana[]
@@ -46,10 +47,11 @@ export default function Pestanas({ pestanas, activa, onCambiar, etiqueta, base }
             tabIndex={seleccionada ? 0 : -1}
             onClick={() => onCambiar(p.id)}
             onKeyDown={(e) => teclado(e, i)}
-            className={`min-h-11 flex-1 rounded-boton px-2 text-[13px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-naranja ${
-              seleccionada ? 'bg-naranja text-white' : 'text-cafe'
+            className={`flex min-h-11 flex-1 items-center justify-center gap-2 rounded-boton px-2 text-[13px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-naranja ${
+              seleccionada ? 'bg-naranja text-white' : 'text-cafe hover:bg-crema'
             }`}
           >
+            {p.icono}
             {p.etiqueta}
           </button>
         )

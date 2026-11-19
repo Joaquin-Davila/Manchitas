@@ -50,8 +50,8 @@ export default defineConfig({
         description:
           'Identifica a tu perro, conecta con tu comunidad y protege a las mascotas de Hermosillo.',
         lang: 'es-MX',
-        theme_color: '#FBD66E',
-        background_color: '#FFF4DC',
+        theme_color: '#FFFDF8',
+        background_color: '#F7F3EA',
         display: 'standalone',
         start_url: '/',
         icons: [

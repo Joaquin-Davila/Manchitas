@@ -17,6 +17,12 @@ export type Aliado = {
   zona: string
   lat: number
   lng: number
+  /**
+   * Foto de banco (Unsplash, public/images/aliados/): ilustra el tipo de servicio, no es el
+   * establecimiento (que es de ejemplo). Créditos en docs/ATRIBUCION-IMAGENES.md.
+   */
+  foto?: string
+  fotoAlt?: string
 }
 
 export type Campana = {
@@ -41,6 +47,8 @@ export const aliados: Aliado[] = [
     zona: 'Zona centro',
     lat: 29.09,
     lng: -110.96,
+    foto: '/images/aliados/clinica-mezquite.webp',
+    fotoAlt: 'Quirófano veterinario iluminado con mesa de cirugía y lámpara',
   },
   {
     id: 'a2',
@@ -52,6 +60,8 @@ export const aliados: Aliado[] = [
     zona: 'Colonia Pitic',
     lat: 29.083,
     lng: -110.975,
+    foto: '/images/aliados/veterinaria-patitas.webp',
+    fotoAlt: 'Veterinario revisando a un perro salchicha negro con café',
   },
   {
     id: 'a3',
@@ -63,6 +73,8 @@ export const aliados: Aliado[] = [
     zona: 'Zona norte',
     lat: 29.12,
     lng: -110.98,
+    foto: '/images/aliados/hospital-saguaro.webp',
+    fotoAlt: 'Veterinaria haciendo un ultrasonido a un perro',
   },
   {
     id: 'a4',
@@ -74,6 +86,8 @@ export const aliados: Aliado[] = [
     zona: 'Villa de Seris',
     lat: 29.07,
     lng: -110.93,
+    foto: '/images/aliados/clinica-colita-feliz.webp',
+    fotoAlt: 'Veterinario con cubrebocas abrazando a un cachorro corgi en el consultorio',
   },
   {
     id: 'a5',
@@ -85,6 +99,8 @@ export const aliados: Aliado[] = [
     zona: 'Zona oriente',
     lat: 29.1,
     lng: -110.92,
+    foto: '/images/aliados/jornadas-sonora-pet.webp',
+    fotoAlt: 'Aplicación de una vacuna en la pata de un perro',
   },
   {
     id: 'a6',
@@ -96,6 +112,8 @@ export const aliados: Aliado[] = [
     zona: 'Zona poniente',
     lat: 29.075,
     lng: -111.0,
+    foto: '/images/aliados/veterinaria-cerro-campana.webp',
+    fotoAlt: 'Veterinario atendiendo a un perro junto a su tutor',
   },
 ]
 
@@ -195,4 +213,32 @@ export function filtrarCampanas(lista: Campana[], busqueda: string, filtro: Filt
 /** Enlace a las indicaciones de OpenStreetMap, sin clave. */
 export function enlaceComoLlegar(a: Pick<Aliado, 'lat' | 'lng'>): string {
   return `https://www.openstreetmap.org/directions?route=%3B${a.lat}%2C${a.lng}`
+}
+
+export type EstadoCampana = 'Próxima' | 'Hoy' | 'En curso' | 'Finalizada'
+
+/** "9:00 a 13:00 h" -> minutos del día de inicio y fin; null si el texto no trae ese formato. */
+function rangoHorario(horario: string): [number, number] | null {
+  const m = /(\d{1,2}):(\d{2})\s*a\s*(\d{1,2}):(\d{2})/.exec(horario)
+  if (!m) return null
+  return [Number(m[1]) * 60 + Number(m[2]), Number(m[3]) * 60 + Number(m[4])]
+}
+
+/**
+ * Estado de una campaña según su fecha y horario. Solo se calcula con los datos de la campaña:
+ * si el horario no se puede leer, el día de la campaña cuenta como "Hoy".
+ */
+export function estadoCampana(c: Campana, hoy: string, ahora = new Date()): EstadoCampana {
+  if (c.fecha > hoy) return 'Próxima'
+  if (c.fecha < hoy) return 'Finalizada'
+  const rango = rangoHorario(c.horario)
+  if (!rango) return 'Hoy'
+  const minutos = ahora.getHours() * 60 + ahora.getMinutes()
+  if (minutos < rango[0]) return 'Hoy'
+  return minutos <= rango[1] ? 'En curso' : 'Finalizada'
+}
+
+/** Próximas campañas que se hacen en un aliado (para su ficha y su marcador). */
+export function campanasDeAliado(lista: Campana[], aliadoId: string): Campana[] {
+  return lista.filter((c) => c.aliadoId === aliadoId)
 }

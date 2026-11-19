@@ -22,3 +22,23 @@ Los archivos están en `public/img/`, convertidos a WebP (1200 px la portada, 48
 
 Los nombres de autor salen de los resultados de búsqueda de Pexels (sus páginas bloquean la lectura
 automática); conviene confirmarlos en cada enlace antes de la entrega del concurso.
+
+## Aliados de Comunidad (Unsplash)
+
+Fotos de las tarjetas de "Veterinarias y aliados que cuidan", de [Unsplash](https://unsplash.com/license)
+(uso gratuito, también comercial, sin atribución obligatoria; se acreditan por cortesía). Ilustran el
+tipo de servicio: **no son los establecimientos**, que son de ejemplo, y la tarjeta lleva el letrero
+"Foto de ejemplo". Están en `public/images/aliados/`, recortadas a 960 × 540 px (16:9) en WebP.
+Si una foto no carga, la tarjeta muestra la ilustración de su tipo.
+
+| Archivo | Aliado de ejemplo | Foto en Unsplash | Autor |
+|---|---|---|---|
+| `clinica-mezquite.webp` | Clínica Veterinaria Mezquite 24 h | [DE6rYp1nAho](https://unsplash.com/photos/DE6rYp1nAho) | Arseny Togulev |
+| `veterinaria-patitas.webp` | Veterinaria Patitas del Desierto | [e4f87NzUJsU](https://unsplash.com/photos/e4f87NzUJsU) | Alexander Mass |
+| `hospital-saguaro.webp` | Hospital Veterinario Saguaro 24 h | [q-1iFFFN6ls](https://unsplash.com/photos/q-1iFFFN6ls) | Alexander Mass |
+| `clinica-colita-feliz.webp` | Clínica Colita Feliz | [ybZ5hRxaWS4](https://unsplash.com/photos/ybZ5hRxaWS4) | Karlo Tottoc |
+| `jornadas-sonora-pet.webp` | Centro de Jornadas Sonora Pet | [fQeLC7WlNm8](https://unsplash.com/photos/fQeLC7WlNm8) | Alexander Mass |
+| `veterinaria-cerro-campana.webp` | Veterinaria Cerro de la Campana | [y_EbiAIQrp4](https://unsplash.com/photos/y_EbiAIQrp4) | Karlo Tottoc |
+
+Los autores salen de la búsqueda de Unsplash leída de forma automática; conviene confirmarlos en cada
+enlace antes de la entrega del concurso.

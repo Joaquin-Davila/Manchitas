@@ -21,11 +21,18 @@ export type Animal = {
   fotoAlt: string
 }
 
+export type Sexo = Animal['sexo']
+export type Edad = 'cachorro' | 'adulto'
+
 export type FiltrosAdopcion = {
   especie: Especie | null
-  cachorros: boolean
+  /** Cachorro = menos de 12 meses. */
+  edad: Edad | null
   tamano: Tamano | null
+  sexo: Sexo | null
 }
+
+export const SIN_FILTROS_ADOPCION: FiltrosAdopcion = { especie: null, edad: null, tamano: null, sexo: null }
 
 export const animales: Animal[] = [
   {
@@ -154,8 +161,9 @@ export function filtrarAnimales(busqueda: string, f: FiltrosAdopcion): Animal[] 
   return animales.filter(
     (a) =>
       (!f.especie || a.especie === f.especie) &&
-      (!f.cachorros || esCachorro(a)) &&
+      (!f.edad || (f.edad === 'cachorro') === esCachorro(a)) &&
       (!f.tamano || a.tamano === f.tamano) &&
+      (!f.sexo || a.sexo === f.sexo) &&
       (!q || normalizar(`${a.nombre} ${a.descripcion} ${a.publicadoPor}`).includes(q)),
   )
 }

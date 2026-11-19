@@ -40,7 +40,7 @@ export function validarContrasenaActual(valor: string): string | null {
 
 export function validarNombreMascota(valor: string): string | null {
   const texto = valor.trim()
-  if (!texto) return 'Escribe el nombre de tu perro.'
+  if (!texto) return 'Escribe el nombre de tu mascota.'
   if (!/^[\p{L}\p{N}][\p{L}\p{N}\s'.-]*$/u.test(texto) || texto.length > 40) {
     return 'Usa solo letras y números (máximo 40).'
   }
@@ -103,7 +103,7 @@ export function validarFechaVacuna(valor: string, nacimiento: string, hoy = new 
   if (!fechaExiste(valor)) return 'Esa fecha no existe.'
   if (valor > hoyISO(hoy)) return 'La fecha no puede ser futura.'
   const antes = nacimiento.length === 4 ? valor.slice(0, 4) < nacimiento : valor < nacimiento
-  if (antes) return 'La fecha es anterior al nacimiento de tu perro.'
+  if (antes) return 'La fecha es anterior al nacimiento de tu mascota.'
   return null
 }
 

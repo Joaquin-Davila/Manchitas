@@ -36,9 +36,9 @@ export default function PerfilPublico() {
 
   return (
     <>
-      {/* La ficha de un perro no debe aparecer en buscadores. */}
+      {/* La ficha de una mascota no debe aparecer en buscadores. */}
       <meta name="robots" content="noindex" />
-      <EncabezadoCurvo titulo="Ficha del perro" atras="/buscar" />
+      <EncabezadoCurvo titulo="Ficha de la mascota" atras="/buscar" />
       <main className="flex flex-col gap-4 px-5 pb-10 pt-6">
         {perfil === undefined && (
           <p role="status" className="sr-only">

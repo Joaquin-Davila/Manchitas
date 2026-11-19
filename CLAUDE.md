@@ -71,10 +71,10 @@ Sub-pasos 12a–12f en `docs/PLAN.md` (12a a 12d hechos): escritorio, imágenes,
 
 ## Decisiones tomadas
 - **Folio aleatorio** (ej. `MCH-7K3P9Q`), no consecutivo. El QR apunta a un token largo distinto.
-- **Registro solo de perros**, con campo `especie` para sumar gatos después. Adopción sí muestra perros y gatos.
+- **Registro de perros y gatos** (antes solo perros): el tutor elige la especie al registrar o editar. La migración `20261118000500_especie_gatos.sql` quita el `especie := 'perro'` forzado del trigger y permite al cliente escribir `especie`; la columna solo acepta `perro` o `gato`. La ficha pública del QR no recibe la especie, así que usa textos neutros ("Ficha de la mascota"). Adopción muestra perros y gatos.
 - **Reporte ciudadano sin cuenta**, con folio de seguimiento y límite de envíos.
 - **Autoridad:** panel sencillo de solo lectura, como último paso.
-- **Barra inferior:** Mascotas, Comunidad (Campañas y Adopción), Inicio, Salud, Avisos. El encabezado de la pestaña Avisos dice "Reportes".
+- **Barra inferior:** Mascotas, Comunidad (Campañas y Adopción), Inicio, Salud, Avisos. **Avisos** (`src/features/avisos/`) es un centro de avisos **calculados**: no hay tabla de notificaciones; `src/lib/avisos.ts` los deriva de las mascotas, cartillas y sesión del usuario (y de las campañas de ejemplo), con id estable, así que no se duplican. Lo leído y lo eliminado se guarda por cuenta en localStorage (`manchitas.avisos.<correo>`). Debajo sigue el centro de reportes ciudadanos (`CentroReportes`), sin cambios. Avisos persistentes entre dispositivos requerirían una tabla con RLS.
 - **Mapa:** Leaflet con OpenStreetMap.
 - **Cartilla:** mostrar solo vacunas aplicadas y la próxima pendiente. Sin "4/5" ni "Al día" hasta que un veterinario valide el esquema.
 - **Supabase (paso 10, conectado):** proyecto propio, sin claves en el repo (`.env` fuera de git, `.env.example` sin valores; en el cliente solo la clave anon, nunca la `service_role`). Sin `.env` la app sigue en **modo local** (localStorage y sesión simulada); cada repositorio de `src/lib` (mascotas, cartillas, reportes) y `ProveedorSesion` elige el modo con `haySupabase`.

@@ -3,36 +3,50 @@
 @import "@fontsource/poppins/700.css";
 @import "tailwindcss";
 
-/* Tokens de DESIGN.md */
+/* Tokens de DESIGN.md. Paleta crema + azul/turquesa (noviembre 2026): fondos y superficies en marfil,
+   crema y arena; azul (#4d82bc -> #386494) en botones, activo e íconos; turquesa (#7ec4cf) en folio y
+   badges; lavanda (#d1cfe2) en filtros, etiquetas y tarjetas secundarias. Sin rosa. Los nombres de los tokens vienen de la paleta cálida original;
+   "Antes" indica el valor de esa paleta. */
 @theme {
-  --color-crema: #fff4dc;
-  --color-amarillo: #fbd66e;
-  --color-amarillo-borde: #f2c24e;
-  --color-naranja: #b85506;
-  --color-naranja-sombra: #8f4304;
-  --color-cafe: #3b2a12;
-  --color-cafe-suave: #5a4217;
-  --color-tarjeta-sombra: #ebd9ae;
-  --color-barra-borde: #f2e2b8;
+  --color-white: #fffdf8; /* superficies "bg-white" (tarjetas, barra, modales): marfil */
+  --color-crema: #f7f3ea; /* fondo base: marfil cálido claro. Antes #fff4dc */
+  --color-amarillo: #fffdf8; /* navbar y encabezados (sin línea inferior). Antes #fbd66e */
+  --color-amarillo-borde: #dccfb4; /* arena: conectores de pasos, guiones y bordes de detalle. Antes #f2c24e */
+  --color-naranja: #386494; /* azul de acción: #4d82bc oscurecido (6.0:1 con texto claro). Botón principal, activo, filtros e íconos. Antes #b85506 */
+  --color-naranja-sombra: #2c5582; /* sombra del botón, enlaces y foco. Antes #8f4304 */
+  --color-cafe: #2d2a26; /* texto principal carbón cálido (12.9:1). Antes #3b2a12 */
+  --color-cafe-suave: #625b53; /* texto secundario (6.0:1 sobre el fondo). Antes #5a4217 */
+  --color-tarjeta-sombra: #eae1cf; /* Antes #ebd9ae */
+  --color-barra-borde: #e8dfcc; /* Antes #f2e2b8 */
 
-  --color-rosa: #f8c4c8;
-  --color-durazno: #ffb985;
-  --color-lima: #d6e86b;
-  --color-celeste: #a9e3ee;
-  --color-franja: #bdeaf2;
-  --color-franja-texto: #24505b;
-  --color-salud-fondo: #d4f0ec;
-  --color-salud-trazo: #0b6f66;
-  --color-aviso-fondo: #ffe6c7;
-  --color-foto-vacia: #f3ddb0;
-  --color-huella: #d9a441;
+  --color-rosa: #ecebf4; /* lavanda (#d1cfe2 aclarado): tarjetas de dato y etiquetas. Antes #f8c4c8 */
+  --color-durazno: #f2e8d5; /* arena. Antes #ffb985 */
+  --color-lima: #e3f1f3; /* turquesa suave. Antes #d6e86b */
+  --color-celeste: #e3edfa; /* azul suave. Antes #a9e3ee */
+  --color-franja: #f0e6d2; /* franja con el nombre de la mascota: arena. Antes #bdeaf2 */
+  --color-franja-texto: #3d372f; /* Antes #24505b */
+  --color-salud-fondo: #f0e6d2; /* arena: íconos de salud. Antes #d4f0ec */
+  --color-salud-trazo: #2c6e78; /* turquesa (#7ec4cf oscurecido): folio, badges de estado y verificación (5.0:1). Antes #0b6f66 */
+  --color-aviso-fondo: #ecebf4; /* lavanda: filtros inactivos, avisos e íconos secundarios en todas las vistas. Antes #ffe6c7 */
+  --color-foto-vacia: #eee5d3; /* Antes #f3ddb0 */
+  --color-huella: #e2d3b2; /* huellitas decorativas en arena. Antes #d9a441 */
+
+  /* Tintes suaves de Inicio, Mascotas y Bienvenida (el texto sobre ellos va en carbón cálido) */
+  --color-menta: #7ec4cf; /* turquesa de marca. Antes #a9d8ce */
+  --color-menta-suave: #e3f1f3; /* turquesa suave: folio y badges. Antes #e2f2ee */
+  --color-coral-suave: #ecebf4; /* lavanda: tarjeta "Cerca de ti", etiquetas y detalles complementarios. Antes #fbe4e1 */
+  --color-coral-medio: #d1cfe2; /* lavanda de marca: acento sutil (corazón del contador, ruta punteada). Antes #e8a5a0 */
+  --color-amarillo-suave: #f3ebd9; /* crema: panel de la mascota y áreas destacadas. Antes #fdeebd */
+  --color-crema-clara: #f7f1e4; /* marfil: filas del resumen de cartilla. Antes #fff9ed */
+  --color-borde-calido: #e8dfcc; /* borde de tarjetas (arena definido). Antes #f0e4cf */
+  --color-petroleo: #2c4a6e; /* azul profundo: recuadro de la foto de Bienvenida. Antes #173f4c */
 
   --color-marca-azul: #1e3a8a;
   --color-marca-accion: #0284c7;
   --color-marca-celeste: #38bdf8;
   --color-marca-turquesa: #0d9488;
   --color-coral: #ef4444;
-  /* Texto de error en formularios: coral no llega a 4.5:1 sobre crema */
+  /* Texto de error en formularios: coral no llega a 4.5:1 sobre el fondo */
   --color-error: #b91c1c;
   /* Texto de error sobre fondo rosa (etiquetas): #b91c1c llega a 4.23:1 ahí, este a más de 5:1 */
   --color-error-oscuro: #991b1b;
@@ -46,9 +60,12 @@
   --radius-encabezado: 28px;
   --radius-barra: 36px;
 
-  --shadow-tarjeta: 0 3px 0 #ebd9ae;
-  --shadow-boton: 0 4px 0 #8f4304;
-  --shadow-barra: 0 4px 0 #ebd9ae;
+  --shadow-tarjeta: 0 3px 0 #eae1cf;
+  --shadow-boton: 0 4px 0 #2c5582;
+  --shadow-barra: 0 4px 0 #eae1cf;
+  /* Sombra difusa de las secciones de Inicio; al pasar el cursor se eleva un poco */
+  --shadow-suave: 0 1px 2px rgb(45 42 38 / 0.06), 0 10px 28px -14px rgb(45 42 38 / 0.2);
+  --shadow-elevada: 0 2px 4px rgb(45 42 38 / 0.06), 0 18px 36px -16px rgb(45 42 38 / 0.28);
 }
 
 /* Margen al imprimir (la etiqueta del collar). */
@@ -82,5 +99,42 @@
     background-color: var(--color-crema);
     color: var(--color-cafe);
     font-family: var(--font-sans);
+  }
+}
+
+/* Inicio: aparición escalonada de las secciones y huellitas decorativas. */
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes flotar {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--giro, 0deg));
+  }
+  50% {
+    transform: translateY(-6px) rotate(var(--giro, 0deg));
+  }
+}
+.aparecer {
+  animation: aparecer 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  animation-delay: var(--retraso, 0ms);
+}
+.flotar {
+  transform: rotate(var(--giro, 0deg));
+  animation: flotar 6s ease-in-out infinite;
+  animation-delay: var(--retraso, 0ms);
+}
+/* La regla global acorta la duración pero no el retraso: aquí se quita la animación completa. */
+@media (prefers-reduced-motion: reduce) {
+  .aparecer,
+  .flotar {
+    animation: none;
   }
 }

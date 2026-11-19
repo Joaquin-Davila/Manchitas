@@ -18,3 +18,30 @@
   display: inline-block;
   padding: 10px 3px;
 }
+
+/* Marcadores por categoría: sombra suave y rebote al seleccionarse. */
+.marcador svg {
+  filter: drop-shadow(0 2px 3px rgb(45 42 38 / 0.35));
+  transition: transform 0.2s ease-out;
+}
+.marcador:hover svg {
+  transform: translateY(-2px);
+}
+@keyframes rebote-marcador {
+  0% { transform: translateY(0); }
+  35% { transform: translateY(-10px); }
+  65% { transform: translateY(0); }
+  82% { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+.marcador-activo svg {
+  animation: rebote-marcador 0.6s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marcador-activo svg { animation: none; }
+}
+.marcador:focus-visible {
+  outline: 2px solid var(--color-naranja-sombra);
+  outline-offset: 2px;
+  border-radius: 6px;
+}

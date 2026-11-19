@@ -1,4 +1,4 @@
-import type { DatosMascota, Mascota, PerfilPublico } from '../types/mascota'
+import type { DatosMascota, Especie, Mascota, PerfilPublico } from '../types/mascota'
 import type { Sesion } from '../features/auth/contextoSesion'
 import { borrarFoto, esDataUrl, subirFoto, urlFotoMascota } from './almacenamiento'
 import { generarFolio, generarId, generarToken } from './identificadores'
@@ -37,7 +37,6 @@ async function crearLocal(datos: DatosMascota, tutor: Sesion): Promise<Mascota> 
   const mascota: Mascota = {
     ...datos,
     id: generarId(),
-    especie: 'perro',
     folio,
     token: generarToken(),
     creadaEn: new Date().toISOString(),
@@ -55,7 +54,7 @@ const COLUMNAS = 'id, especie, nombre, raza, nacimiento, senas, nota, foto_path,
 
 type Fila = {
   id: string
-  especie: 'perro'
+  especie: Especie
   nombre: string
   raza: string
   nacimiento: string
@@ -107,6 +106,7 @@ async function crearRemoto(datos: DatosMascota, tutor: Sesion): Promise<Mascota>
   const { data, error } = await clienteRemoto()
     .from('mascotas')
     .insert({
+      especie: datos.especie,
       nombre: datos.nombre,
       raza: datos.raza,
       nacimiento: datos.nacimiento,
@@ -121,6 +121,54 @@ async function crearRemoto(datos: DatosMascota, tutor: Sesion): Promise<Mascota>
     throw new Error('No pudimos guardar a tu mascota. Revisa tu conexión e inténtalo de nuevo.')
   }
   return aMascota(data as Fila)
+}
+
+async function actualizarRemoto(id: string, datos: DatosMascota, tutor: Sesion): Promise<Mascota> {
+  if (!tutor.id) throw new Error('Tu sesión no es válida. Cierra sesión e inicia de nuevo.')
+  const supabase = clienteRemoto()
+  const actual = await supabase.from('mascotas').select('foto_path').eq('id', id).maybeSingle()
+  if (actual.error || !actual.data) throw new Error('No pudimos encontrar a tu mascota. Revisa tu conexión.')
+  const fotoAnterior = (actual.data as { foto_path: string | null }).foto_path
+
+  // fotoUrl: data URL = foto nueva; undefined = se quitó; la URL pública de siempre = sin cambio.
+  const nueva = esDataUrl(datos.fotoUrl)
+  const fotoPath = nueva
+    ? await subirFoto('mascotas-fotos', tutor.id, datos.fotoUrl!)
+    : datos.fotoUrl
+      ? fotoAnterior
+      : null
+
+  // Solo las columnas que el cliente puede editar (permisos por columna): nunca dueño, folio ni token.
+  const { data, error } = await supabase
+    .from('mascotas')
+    .update({
+      especie: datos.especie,
+      nombre: datos.nombre,
+      raza: datos.raza,
+      nacimiento: datos.nacimiento,
+      senas: datos.senas,
+      nota: datos.nota,
+      foto_path: fotoPath,
+    })
+    .eq('id', id)
+    .select(COLUMNAS)
+    .single()
+  if (error) {
+    if (nueva) await borrarFoto('mascotas-fotos', fotoPath)
+    throw new Error('No pudimos guardar los cambios. Revisa tu conexión e inténtalo de nuevo.')
+  }
+  if (fotoAnterior && fotoAnterior !== fotoPath) await borrarFoto('mascotas-fotos', fotoAnterior)
+  return aMascota(data as Fila)
+}
+
+async function actualizarLocal(id: string, datos: DatosMascota, tutor: Sesion): Promise<Mascota> {
+  const todas = leerTodas()
+  const actual = todas.find((m) => m.id === id && m.tutorCorreo === tutor.correo)
+  if (!actual) throw new Error('No pudimos encontrar a tu mascota.')
+  // Folio, token y dueño no cambian al editar.
+  const editada: Mascota = { ...actual, ...datos }
+  guardarTodas(todas.map((m) => (m.id === id ? editada : m)))
+  return editada
 }
 
 // --- API pública del repositorio ---------------------------------------------------------
@@ -138,6 +186,11 @@ export async function obtenerMascota(id: string, tutorCorreo: string): Promise<M
 
 export async function crearMascota(datos: DatosMascota, tutor: Sesion): Promise<Mascota> {
   return haySupabase ? crearRemoto(datos, tutor) : crearLocal(datos, tutor)
+}
+
+/** Edita los datos de la ficha. Folio, QR y dueño se conservan. */
+export async function actualizarMascota(id: string, datos: DatosMascota, tutor: Sesion): Promise<Mascota> {
+  return haySupabase ? actualizarRemoto(id, datos, tutor) : actualizarLocal(id, datos, tutor)
 }
 
 // --- Consulta pública (QR o ID exacto) ---------------------------------------------------

@@ -1,3 +1,5 @@
+import type { Especie } from '../types/mascota'
+
 // La fecha de nacimiento se guarda como texto ("AAAA" o "AAAA-MM-DD") y nunca se convierte
 // a Date: así no hay desfases por zona horaria. Solo se compara con la fecha local de hoy.
 
@@ -19,20 +21,25 @@ export function plural(n: number, singular: string, plural: string): string {
   return `${n} ${n === 1 ? singular : plural}`
 }
 
-/** "Cachorro", "unos 3 años", "5 meses", "4 años"… según lo que se sepa. */
-export function textoEdad(nacimiento: string, hoy = new Date()): string {
+/**
+ * "Cachorro (5 meses)", "Gatito (5 meses)", "unos 3 años", "4 años"… según lo que se sepa. Sin especie
+ * (p. ej. la ficha pública, que no la recibe) se usa un texto neutro: "5 meses", "menos de 1 año".
+ */
+export function textoEdad(nacimiento: string, hoy = new Date(), especie?: Especie): string {
   const { anio, mes, dia } = partes(nacimiento)
   const anioHoy = hoy.getFullYear()
+  const joven = especie === 'gato' ? 'Gatito' : especie === 'perro' ? 'Cachorro' : null
+  const conJoven = (detalle: string) => (joven ? `${joven} (${detalle})` : detalle.charAt(0).toUpperCase() + detalle.slice(1))
 
   if (mes === undefined || dia === undefined) {
     const anios = anioHoy - anio
-    if (anios <= 0) return 'Cachorro (menos de 1 año)'
+    if (anios <= 0) return conJoven('menos de 1 año')
     return `Unos ${plural(anios, 'año', 'años')}`
   }
 
   let meses = (anioHoy - anio) * 12 + (hoy.getMonth() + 1 - mes)
   if (hoy.getDate() < dia) meses -= 1
-  if (meses < 1) return 'Cachorro (menos de 1 mes)'
-  if (meses < 12) return `Cachorro (${plural(meses, 'mes', 'meses')})`
+  if (meses < 1) return conJoven('menos de 1 mes')
+  if (meses < 12) return conJoven(plural(meses, 'mes', 'meses'))
   return plural(Math.floor(meses / 12), 'año', 'años')
 }

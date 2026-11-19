@@ -1,4 +1,4 @@
-import { ArrowLeft, CircleCheck, Download, Printer } from 'lucide-react'
+import { ArrowLeft, CircleCheck, Download, Pencil, Printer } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import BotonPrincipal from '../../components/ui/BotonPrincipal'
@@ -19,7 +19,9 @@ export default function FichaMascota() {
   const { id } = useParams()
   const { sesion } = useSesion()
   const location = useLocation()
-  const recienRegistrada = (location.state as { nueva?: boolean } | null)?.nueva === true
+  const estadoNav = location.state as { nueva?: boolean; editada?: boolean } | null
+  const recienRegistrada = estadoNav?.nueva === true
+  const recienEditada = estadoNav?.editada === true
   const [mascota, setMascota] = useState<Estado>(undefined)
   const [qr, setQr] = useState<string | null>(null)
 
@@ -51,6 +53,13 @@ export default function FichaMascota() {
     }
   }, [token])
 
+  // El menú y el modal del QR enlazan a #etiqueta: se baja a ella cuando ya hay ficha.
+  const conFicha = !!mascota
+  const ancla = location.hash
+  useEffect(() => {
+    if (conFicha && ancla === '#etiqueta') document.getElementById('etiqueta')?.scrollIntoView({ block: 'center' })
+  }, [conFicha, ancla])
+
   if (mascota === undefined) return null
 
   if (mascota === null) {
@@ -59,7 +68,7 @@ export default function FichaMascota() {
         <h2 className="font-titulo text-lg font-semibold">No encontramos a esa mascota</h2>
         <p className="text-sm text-cafe-suave">Puede que el enlace sea incorrecto o que no sea de tu cuenta.</p>
         <Link to="/mascotas" className="min-h-11 py-2 font-semibold text-naranja-sombra underline">
-          Ver mis perros
+          Ver mis mascotas
         </Link>
       </Tarjeta>
     )
@@ -68,13 +77,19 @@ export default function FichaMascota() {
   // Al imprimir solo debe salir la etiqueta: todo lo demás lleva `print:hidden`.
   return (
     <div className="flex flex-col gap-4">
-      <Link
-        to="/mascotas"
-        className="flex min-h-11 w-fit items-center gap-2 text-sm font-semibold text-naranja-sombra print:hidden"
-      >
-        <ArrowLeft aria-hidden="true" size={18} />
-        Mis perros
-      </Link>
+      <div className="flex items-center justify-between gap-3 print:hidden">
+        <Link to="/mascotas" className="flex min-h-11 w-fit items-center gap-2 text-sm font-semibold text-naranja-sombra">
+          <ArrowLeft aria-hidden="true" size={18} />
+          Mis mascotas
+        </Link>
+        <Link
+          to={`/mascotas/${mascota.id}/editar`}
+          className="flex min-h-11 items-center gap-2 rounded-full border-2 border-barra-borde bg-white px-4 text-sm font-semibold text-cafe hover:bg-amarillo-suave"
+        >
+          <Pencil aria-hidden="true" size={16} />
+          Editar
+        </Link>
+      </div>
 
       {recienRegistrada && (
         <Tarjeta
@@ -83,6 +98,15 @@ export default function FichaMascota() {
         >
           <CircleCheck aria-hidden="true" size={22} className="shrink-0" />
           ¡Listo! {mascota.nombre} ya tiene su ID de collar y su QR.
+        </Tarjeta>
+      )}
+      {recienEditada && (
+        <Tarjeta
+          role="status"
+          className="flex items-center gap-3 bg-salud-fondo p-4 text-sm font-semibold text-salud-trazo shadow-none print:hidden"
+        >
+          <CircleCheck aria-hidden="true" size={22} className="shrink-0" />
+          Guardamos los cambios de {mascota.nombre}. Su folio y su QR siguen iguales.
         </Tarjeta>
       )}
 
@@ -96,7 +120,7 @@ export default function FichaMascota() {
           <div>
             <dt className="text-[13px] font-semibold text-cafe-suave">Raza y edad</dt>
             <dd className="m-0">
-              {mascota.raza} · {textoEdad(mascota.nacimiento)}
+              {mascota.raza} · {textoEdad(mascota.nacimiento, undefined, mascota.especie)}
             </dd>
           </div>
           {mascota.senas && (
@@ -136,7 +160,7 @@ export default function FichaMascota() {
         </p>
       </Tarjeta>
 
-      <section aria-labelledby="titulo-etiqueta" className="flex flex-col items-center gap-3">
+      <section id="etiqueta" aria-labelledby="titulo-etiqueta" className="flex scroll-mt-6 flex-col items-center gap-3">
         <h2 id="titulo-etiqueta" className="font-titulo text-base font-semibold print:hidden">
           Etiqueta para el collar
         </h2>
