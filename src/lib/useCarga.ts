@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 type Resultado<T> = { clave: string; llave: string; datos: T | null; error: string }
 
@@ -16,6 +16,8 @@ export function useCarga<T>(clave: string, cargar: () => Promise<T>) {
   const [intento, setIntento] = useState(0)
   const [resultado, setResultado] = useState<Resultado<T> | null>(null)
   const llave = `${clave}#${intento}`
+  // Estable entre renders: se puede usar como dependencia de un efecto (p. ej. una suscripción en tiempo real).
+  const recargar = useCallback(() => setIntento((n) => n + 1), [])
 
   useEffect(() => {
     let vigente = true
@@ -39,6 +41,6 @@ export function useCarga<T>(clave: string, cargar: () => Promise<T>) {
     datos: cargando ? null : resultado.datos,
     cargando,
     error: cargando ? '' : resultado.error,
-    recargar: () => setIntento((n) => n + 1),
+    recargar,
   }
 }
