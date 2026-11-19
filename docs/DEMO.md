@@ -22,7 +22,9 @@ No uses esta contraseña para nada más. Para cambiarla, edita `VITE_DEMO_PASSWO
 - Manchitas Solidario: 3 campañas publicadas con avance distinto (18 %, 62 % y 91 %), su desglose de gastos, actualizaciones y aportaciones **de demostración** (confirmadas, y una pendiente, una fallida y una reembolsada), más una campaña de la cuenta demo en revisión. **Ningún pago es real**: no hay pasarela y lo que se aporta desde la app queda pendiente y no suma al avance.
 - Todo lo ficticio lleva `es_demo = true` y la interfaz lo rotula "Ejemplo". **No son certificados veterinarios, establecimientos reales ni personas reales.**
 
-Pendiente en los bloques siguientes: chat, notificaciones, extraviadas y foros.
+- Mascotas extraviadas de demostración, cada una en una etapa: **Max** (día 2, recibiendo avistamientos), **Oreo** (de la cuenta demo, día 4: ya tiene el aviso previo), **Nina** (día 6, con foro abierto que crea la propia automatización) y **Rocco** (localizado, con foro cerrado e historial). Más 4 reportes ciudadanos de ejemplo que ve el panel de autoridad.
+
+Pendiente en los bloques siguientes: chat y el centro de notificaciones completo.
 
 ## Crear o restablecer la cuenta y los datos
 
@@ -69,3 +71,12 @@ npx supabase db query --remote --yes "update public.establecimientos set propiet
 ```
 
 La campaña "Un hogar temporal para gatitos rescatados" de la cuenta demo queda en revisión a propósito, para mostrar ese estado.
+
+## Foros automáticos de mascotas extraviadas
+
+- La función `public.procesar_extraviados()` la ejecuta `pg_cron` cada 30 minutos (trabajo `procesar-extraviados`). El día 4 de un reporte activo avisa al tutor y el día 5 abre el foro. No duplica nada aunque corra muchas veces, registra cada ejecución en `automatizacion_log` y captura los errores por reporte.
+- Es una función SQL dentro de la base (no una Edge Function): no usa HTTP ni secretos y es atómica.
+- Ver el trabajo y sus ejecuciones: `npx supabase db query --remote --read-only "select * from cron.job"` y `"select * from cron.job_run_details order by start_time desc limit 10"`.
+- Ejecutarla a mano (con tu confirmación): `npx supabase db query --remote --yes "select public.procesar_extraviados()"`.
+- Si por alguna razón `pg_cron` no estuviera activo: `create extension pg_cron with schema pg_catalog;` y `select cron.schedule('procesar-extraviados', '*/30 * * * *', 'select public.procesar_extraviados()');`.
+- Volver a correr el seed **reinicia** solo los extraviados de demostración con fechas relativas a hoy, para que las etapas sigan vigentes.

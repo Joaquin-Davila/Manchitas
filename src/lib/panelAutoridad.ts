@@ -25,10 +25,12 @@ export type ReporteAutoridad = {
   /** Rutas en el bucket privado; no son URLs. */
   fotosPaths: string[]
   telefono: string | null
+  /** Reporte de demostración (datos de ejemplo). */
+  demo: boolean
 }
 
 const COLUMNAS =
-  'id, folio, tipo, estado, colonia, calle, referencias, lat, lng, descripcion, fecha_hechos, creado_en, fotos_paths, telefono'
+  'id, folio, tipo, estado, colonia, calle, referencias, lat, lng, descripcion, fecha_hechos, creado_en, fotos_paths, telefono, es_demo'
 
 type Fila = {
   id: string
@@ -45,6 +47,7 @@ type Fila = {
   creado_en: string
   fotos_paths: string[]
   telefono: string | null
+  es_demo: boolean
 }
 
 function aReporte(f: Fila): ReporteAutoridad {
@@ -63,6 +66,7 @@ function aReporte(f: Fila): ReporteAutoridad {
     creadoEn: f.creado_en,
     fotosPaths: f.fotos_paths,
     telefono: f.telefono,
+    demo: f.es_demo,
   }
 }
 

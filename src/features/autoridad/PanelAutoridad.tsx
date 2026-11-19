@@ -92,6 +92,7 @@ function ContenidoDetalle({ reporte, botonCerrar }: { reporte: ReporteAutoridad;
         <div>
           <h2 id="titulo-detalle" className="font-titulo text-lg font-bold">
             {reporte.folio}
+            {reporte.demo && <span className="ml-2 rounded-full bg-crema-clara px-2 py-px align-middle text-[11px] font-semibold text-cafe">Ejemplo</span>}
           </h2>
           <div className="mt-1 flex flex-wrap gap-2">
             <EtiquetaTipo r={reporte} />
@@ -313,7 +314,10 @@ export default function PanelAutoridad() {
                         {TEXTO_ESTADO[r.estado]}
                       </span>
                     </span>
-                    <span className="font-titulo text-base font-semibold">{r.folio}</span>
+                    <span className="font-titulo text-base font-semibold">
+                      {r.folio}
+                      {r.demo && <span className="ml-2 rounded-full bg-crema-clara px-2 py-px align-middle text-[11px] font-semibold text-cafe">Ejemplo</span>}
+                    </span>
                     <span className="truncate text-[13px] text-cafe-suave">{lugar(r)}</span>
                     <span className="text-[13px] text-cafe-suave">
                       {formatearFecha(hoyISO(new Date(r.creadoEn)))}

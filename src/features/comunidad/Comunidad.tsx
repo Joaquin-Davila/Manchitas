@@ -1,8 +1,9 @@
-import { CalendarHeart, HandHeart, Heart, MapPin, Stethoscope } from 'lucide-react'
+import { CalendarHeart, HandHeart, Heart, MapPin, Search, Stethoscope } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import Huella from '../../components/ui/Huella'
 import Pestanas from '../../components/ui/Pestanas'
 import { Aparecer } from '../mascotas/inicio/comun'
+import ListaExtraviadas from '../extraviadas/ListaExtraviadas'
 import ListaSolidario from '../solidario/ListaSolidario'
 import ListaVeterinarias from '../veterinarias/ListaVeterinarias'
 import PanelAdopcion from './PanelAdopcion'
@@ -15,6 +16,7 @@ const PESTANAS = [
   { id: 'adopcion', etiqueta: 'Adopción', icono: icono(Heart) },
   { id: 'veterinarias', etiqueta: 'Veterinarias', icono: icono(Stethoscope) },
   { id: 'solidario', etiqueta: 'Solidario', icono: icono(HandHeart) },
+  { id: 'extraviadas', etiqueta: 'Extraviadas', icono: icono(Search) },
 ]
 const IDS = PESTANAS.map((p) => p.id)
 
@@ -52,7 +54,7 @@ export default function Comunidad() {
         </p>
       </Aparecer>
 
-      <div className="md:max-w-2xl">
+      <div className="md:max-w-3xl">
         <Pestanas pestanas={PESTANAS} activa={activa} onCambiar={cambiar} etiqueta="Comunidad" base="comunidad" />
       </div>
 
@@ -63,6 +65,8 @@ export default function Comunidad() {
           <ListaVeterinarias />
         ) : activa === 'solidario' ? (
           <ListaSolidario />
+        ) : activa === 'extraviadas' ? (
+          <ListaExtraviadas />
         ) : (
           <PanelCampanas />
         )}

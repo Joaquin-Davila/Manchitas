@@ -439,6 +439,147 @@ begin
     and pg_temp.como('authenticated', a, format($q$ with i as (insert into storage.objects (bucket_id, name) values ('colectas-fotos', %L)
       returning 1) select count(*) from i $q$, b || '/ajena.jpg')) = 'ERROR:42501');
 
+  -- Bloque C: mascotas extraviadas, foros y notificaciones -------------------------------------
+  -- Nota: cada llamada a una función volátil va en su propia sentencia; una subconsulta en la misma
+  -- expresión usaría la foto de datos anterior a sus cambios.
+  perform set_config('request.jwt.claims', '', true);
+
+  v := pg_temp.como('authenticated', a, $q$ with i as (insert into public.extraviados (nombre, especie, zona, fecha_extravio)
+        values ('RLS-Luna', 'gato', 'Colonia de prueba', public.hoy_hermosillo()) returning 1) select count(*) from i $q$);
+  res := res || pg_temp.fila('una persona con sesión reporta a su mascota extraviada', v = '1');
+  insert into _b select 'ext', id::text from public.extraviados where tutor_id = a;
+  res := res || pg_temp.fila('el servidor fija tutor, nombre visible y estado activo del reporte',
+    (select estado = 'activo' and tutor_nombre like 'Ana%' and not es_demo and aviso_previo_en is null and foro_creado_en is null
+       from public.extraviados where id = (select val::uuid from _b where k = 'ext')));
+  res := res || pg_temp.fila('el cliente no puede escribir el estado ni el tutor del reporte',
+    pg_temp.como('authenticated', b, $q$ with i as (insert into public.extraviados (nombre, especie, zona, fecha_extravio, estado)
+      values ('X', 'gato', 'Z', public.hoy_hermosillo(), 'localizado') returning 1) select count(*) from i $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', b, format($q$ with i as (insert into public.extraviados (nombre, especie, zona, fecha_extravio, tutor_id)
+      values ('X', 'gato', 'Z', public.hoy_hermosillo(), %L) returning 1) select count(*) from i $q$, a)) = 'ERROR:42501');
+  res := res || pg_temp.fila('la fecha del extravío no puede ser futura ni de hace más de 30 días',
+    pg_temp.como('authenticated', b, $q$ with i as (insert into public.extraviados (nombre, especie, zona, fecha_extravio)
+      values ('X', 'gato', 'Z', public.hoy_hermosillo() + 1) returning 1) select count(*) from i $q$) = 'ERROR:P0001'
+    and pg_temp.como('authenticated', b, $q$ with i as (insert into public.extraviados (nombre, especie, zona, fecha_extravio)
+      values ('X', 'gato', 'Z', public.hoy_hermosillo() - 40) returning 1) select count(*) from i $q$) = 'ERROR:P0001');
+  res := res || pg_temp.fila('no se puede reportar con la mascota registrada de otra persona',
+    pg_temp.como('authenticated', b, format($q$ with i as (insert into public.extraviados (mascota_id, nombre, especie, zona, fecha_extravio)
+      values (%L, 'X', 'perro', 'Z', public.hoy_hermosillo()) returning 1) select count(*) from i $q$, ma)) = 'ERROR:42501');
+  res := res || pg_temp.fila('el tutor corrige zona y descripción; el estado no lo puede tocar; otra persona no edita',
+    pg_temp.como('authenticated', a, $q$ with u as (update public.extraviados set zona = 'Otra zona' where tutor_id = (select auth.uid()) returning 1) select count(*) from u $q$) = '1'
+    and pg_temp.como('authenticated', a, $q$ with u as (update public.extraviados set estado = 'localizado' where tutor_id = (select auth.uid()) returning 1) select count(*) from u $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', b, format($q$ with u as (update public.extraviados set zona = 'X' where id = %L returning 1) select count(*) from u $q$, (select val from _b where k = 'ext'))) = '0');
+  res := res || pg_temp.fila('anon no lee reportes, foros, mensajes ni notificaciones',
+    pg_temp.como('anon', null, 'select count(*) from public.extraviados') = 'ERROR:42501'
+    and pg_temp.como('anon', null, 'select count(*) from public.foros') = 'ERROR:42501'
+    and pg_temp.como('anon', null, 'select count(*) from public.extravio_mensajes') = 'ERROR:42501'
+    and pg_temp.como('anon', null, 'select count(*) from public.notificaciones') = 'ERROR:42501');
+
+  -- Avistamientos y comentarios
+  v := pg_temp.como('authenticated', b, format($q$ with i as (insert into public.extravio_mensajes (extraviado_id, tipo, texto, zona)
+        values (%L, 'avistamiento', 'La vi cerca del parque', 'Parque central') returning 1) select count(*) from i $q$, (select val from _b where k = 'ext')));
+  res := res || pg_temp.fila('cualquier persona con sesión publica un avistamiento en un reporte activo', v = '1');
+  res := res || pg_temp.fila('el avistamiento sale con el autor fijado por el servidor',
+    (select autor_id = b and autor_nombre like 'Beto%' and not es_demo from public.extravio_mensajes
+       where extraviado_id = (select val::uuid from _b where k = 'ext') and tipo = 'avistamiento'));
+  res := res || pg_temp.fila('el avistamiento avisa al tutor con una notificación',
+    (select count(*) = 1 from public.notificaciones where usuario_id = a and tipo = 'avistamiento'));
+  v := pg_temp.como('authenticated', b, format($q$ with i as (insert into public.extravio_mensajes (extraviado_id, tipo, texto, zona)
+        values (%L, 'comentario', 'Mucho ánimo', 'esta zona se ignora') returning 1) select count(*) from i $q$, (select val from _b where k = 'ext')));
+  res := res || pg_temp.fila('un comentario no guarda zona (solo los avistamientos la llevan)',
+    v = '1' and (select zona = '' from public.extravio_mensajes where texto = 'Mucho ánimo'));
+  res := res || pg_temp.fila('nadie puede publicar como otra persona ni dejar mensajes vacíos',
+    pg_temp.como('authenticated', b, format($q$ with i as (insert into public.extravio_mensajes (extraviado_id, tipo, texto)
+      values (%L, 'comentario', '') returning 1) select count(*) from i $q$, (select val from _b where k = 'ext'))) = 'ERROR:23514'
+    and pg_temp.como('authenticated', b, format($q$ with i as (insert into public.extravio_mensajes (extraviado_id, tipo, texto, autor_id)
+      values (%L, 'comentario', 'x', %L) returning 1) select count(*) from i $q$, (select val from _b where k = 'ext'), a)) = 'ERROR:42501');
+  res := res || pg_temp.fila('otra persona no borra mensajes ajenos, pero el tutor modera los de su reporte',
+    pg_temp.como('authenticated', '00000000-0000-4000-8000-0000000000c1', $q$ with d as (delete from public.extravio_mensajes where texto = 'Mucho ánimo' returning 1) select count(*) from d $q$) = '0'
+    and pg_temp.como('authenticated', a, $q$ with d as (delete from public.extravio_mensajes where texto = 'Mucho ánimo' returning 1) select count(*) from d $q$) = '1');
+  res := res || pg_temp.fila('el autor borra su propio mensaje',
+    pg_temp.como('authenticated', b, $q$ with d as (delete from public.extravio_mensajes where texto = 'La vi cerca del parque' returning 1) select count(*) from d $q$) = '1');
+
+  -- Notificaciones: solo las propias, solo marcar como leídas
+  res := res || pg_temp.fila('cada quien ve solo sus notificaciones',
+    pg_temp.como('authenticated', a, 'select count(*) from public.notificaciones') <> '0'
+    and pg_temp.como('authenticated', b, 'select count(*) from public.notificaciones') = '0');
+  res := res || pg_temp.fila('se puede marcar una notificación como leída, pero no cambiar su texto ni crear otras',
+    pg_temp.como('authenticated', a, $q$ with u as (update public.notificaciones set leida = true returning 1) select (count(*) > 0)::text from u $q$) = 'true'
+    and pg_temp.como('authenticated', a, $q$ with u as (update public.notificaciones set titulo = 'X' returning 1) select count(*) from u $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', a, format($q$ with i as (insert into public.notificaciones (usuario_id, tipo, titulo) values (%L, 'x', 'X') returning 1) select count(*) from i $q$, a)) = 'ERROR:42501'
+    and pg_temp.como('authenticated', b, format($q$ with u as (update public.notificaciones set leida = false where usuario_id = %L returning 1) select count(*) from u $q$, a)) = '0');
+
+  -- Contacto protegido por WhatsApp
+  perform set_config('request.jwt.claims', '', true);
+  res := res || pg_temp.fila('sin autorización del tutor no se entrega ningún enlace de WhatsApp',
+    coalesce(pg_temp.como('authenticated', b, format($q$ select public.extravio_whatsapp(%L) $q$, (select val from _b where k = 'ext'))), '') = '');
+  update public.extraviados set contacto_whatsapp = true where id = (select val::uuid from _b where k = 'ext');
+  res := res || pg_temp.fila('con autorización del tutor el enlace sale del servidor y solo con sesión',
+    pg_temp.como('authenticated', b, format($q$ select public.extravio_whatsapp(%L) $q$, (select val from _b where k = 'ext'))) = 'https://wa.me/526621112233'
+    and pg_temp.como('anon', null, format($q$ select public.extravio_whatsapp(%L) $q$, (select val from _b where k = 'ext'))) = 'ERROR:42501');
+
+  -- Automatización: aviso del día 4 y foro del día 5 (idempotente)
+  perform set_config('request.jwt.claims', '', true);
+  insert into public.extraviados (id, tutor_id, tutor_nombre, nombre, especie, zona, fecha_extravio) values
+    ('00000000-0000-4000-8000-0000000000a2', a, 'Ana L.', 'RLS-dia2', 'perro', 'Z', public.hoy_hermosillo() - 2),
+    ('00000000-0000-4000-8000-0000000000a4', a, 'Ana L.', 'RLS-dia4', 'perro', 'Z', public.hoy_hermosillo() - 4),
+    ('00000000-0000-4000-8000-0000000000a5', a, 'Ana L.', 'RLS-dia5', 'gato', 'Z', public.hoy_hermosillo() - 5),
+    ('00000000-0000-4000-8000-0000000000a6', a, 'Ana L.', 'RLS-dia6', 'gato', 'Z', public.hoy_hermosillo() - 6);
+  update public.extraviados set estado = 'cerrado' where id = '00000000-0000-4000-8000-0000000000a6';
+  perform public.procesar_extraviados();
+  res := res || pg_temp.fila('el día 4 se avisa al tutor y todavía no hay foro',
+    (select aviso_previo_en is not null and foro_creado_en is null from public.extraviados where id = '00000000-0000-4000-8000-0000000000a4')
+    and not exists (select 1 from public.foros where extraviado_id = '00000000-0000-4000-8000-0000000000a4')
+    and (select count(*) = 1 from public.notificaciones where usuario_id = a and tipo = 'extravio_aviso_previo'));
+  res := res || pg_temp.fila('el día 5 se abre un foro con su notificación',
+    exists (select 1 from public.foros where extraviado_id = '00000000-0000-4000-8000-0000000000a5' and estado = 'abierto')
+    and (select foro_creado_en is not null from public.extraviados where id = '00000000-0000-4000-8000-0000000000a5')
+    and (select count(*) = 1 from public.notificaciones where usuario_id = a and tipo = 'foro_abierto'));
+  res := res || pg_temp.fila('antes del día 4 no pasa nada y un reporte cerrado no genera foro',
+    (select aviso_previo_en is null from public.extraviados where id = '00000000-0000-4000-8000-0000000000a2')
+    and not exists (select 1 from public.foros where extraviado_id in ('00000000-0000-4000-8000-0000000000a2', '00000000-0000-4000-8000-0000000000a6')));
+  perform public.procesar_extraviados();
+  perform public.procesar_extraviados();
+  res := res || pg_temp.fila('ejecutarla varias veces no duplica foros ni avisos (idempotente)',
+    (select count(*) = 1 from public.foros where extraviado_id = '00000000-0000-4000-8000-0000000000a5')
+    and (select count(*) = 1 from public.notificaciones where usuario_id = a and tipo = 'extravio_aviso_previo')
+    and (select count(*) = 1 from public.notificaciones where usuario_id = a and tipo = 'foro_abierto'));
+  res := res || pg_temp.fila('la automatización deja registro en su bitácora',
+    (select count(*) >= 3 from public.automatizacion_log where tarea = 'procesar_extraviados'));
+  v := 'sin error';
+  begin
+    insert into public.foros (extraviado_id) values ('00000000-0000-4000-8000-0000000000a5');
+  exception when unique_violation then
+    v := 'duplicado';
+  end;
+  res := res || pg_temp.fila('la base impide dos foros para el mismo reporte', v = 'duplicado');
+  res := res || pg_temp.fila('la API no puede ejecutar la automatización',
+    pg_temp.como('authenticated', a, $q$ select public.procesar_extraviados()::text $q$) = 'ERROR:42501'
+    and pg_temp.como('anon', null, $q$ select public.procesar_extraviados()::text $q$) = 'ERROR:42501');
+  res := res || pg_temp.fila('el resumen cuenta los días transcurridos y el foro',
+    pg_temp.como('authenticated', b, $q$ select dias::text || '/' || coalesce(foro_estado, '-') from public.extraviados_resumen where id = '00000000-0000-4000-8000-0000000000a5' $q$) = '5/abierto');
+
+  -- Cierre: localizada
+  perform set_config('request.jwt.claims', '', true);
+  insert into public.extravio_mensajes (extraviado_id, autor_id, autor_nombre, tipo, texto)
+    values ('00000000-0000-4000-8000-0000000000a5', b, 'Beto M.', 'comentario', 'Sigo buscando');
+  v := pg_temp.como('authenticated', b, $q$ with x as (select public.cerrar_extravio('00000000-0000-4000-8000-0000000000a5', true)) select 'ok' from x $q$);
+  res := res || pg_temp.fila('solo el tutor puede cerrar su reporte', v = 'ERROR:42501');
+  v := pg_temp.como('authenticated', a, $q$ with x as (select public.cerrar_extravio('00000000-0000-4000-8000-0000000000a5', true)) select 'ok' from x $q$);
+  res := res || pg_temp.fila('al localizarla: cambia el estado, se cierra el foro y se conserva el historial',
+    v = 'ok'
+    and (select estado = 'localizado' and localizado_en is not null from public.extraviados where id = '00000000-0000-4000-8000-0000000000a5')
+    and (select estado = 'cerrado' and cerrado_en is not null from public.foros where extraviado_id = '00000000-0000-4000-8000-0000000000a5')
+    and (select count(*) = 1 from public.extravio_mensajes where extraviado_id = '00000000-0000-4000-8000-0000000000a5'));
+  res := res || pg_temp.fila('al localizarla se avisa al tutor y a quienes participaron',
+    exists (select 1 from public.notificaciones where usuario_id = a and tipo = 'extravio_localizado')
+    and exists (select 1 from public.notificaciones where usuario_id = b and tipo = 'extravio_localizado'));
+  res := res || pg_temp.fila('un reporte cerrado ya no recibe mensajes ni se puede cerrar otra vez',
+    pg_temp.como('authenticated', b, $q$ with i as (insert into public.extravio_mensajes (extraviado_id, tipo, texto)
+      values ('00000000-0000-4000-8000-0000000000a5', 'comentario', 'tarde') returning 1) select count(*) from i $q$) = 'ERROR:42501'
+    and pg_temp.como('authenticated', a, $q$ with x as (select public.cerrar_extravio('00000000-0000-4000-8000-0000000000a5', true)) select 'ok' from x $q$) = 'ERROR:P0001');
+  res := res || pg_temp.fila('un reporte cerrado deja de entregar el contacto por WhatsApp',
+    coalesce(pg_temp.como('authenticated', b, $q$ select public.extravio_whatsapp('00000000-0000-4000-8000-0000000000a5') $q$), '') = '');
+
   -- Resultado: el error revierte todo lo creado arriba.
   -- Resumen corto (el CLI recorta mensajes largos): cuántas pasaron y, completas, las que fallaron.
   raise exception E'PRUEBA RLS (todo se revierte): % OK, % con FALLA.%',

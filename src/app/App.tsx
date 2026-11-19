@@ -21,6 +21,8 @@ const Comunidad = lazy(() => import('../features/comunidad/Comunidad'))
 const FichaVeterinaria = lazy(() => import('../features/veterinarias/FichaVeterinaria'))
 const PaginaColecta = lazy(() => import('../features/solidario/PaginaColecta'))
 const NuevaColecta = lazy(() => import('../features/solidario/NuevaColecta'))
+const PaginaExtravio = lazy(() => import('../features/extraviadas/PaginaExtravio'))
+const NuevoExtravio = lazy(() => import('../features/extraviadas/NuevoExtravio'))
 const BuscarPorId = lazy(() => import('../features/publico/BuscarPorId'))
 const PerfilPublico = lazy(() => import('../features/publico/PerfilPublico'))
 const CentroAvisos = lazy(() => import('../features/avisos/CentroAvisos'))
@@ -83,6 +85,8 @@ export default function App() {
           <Route path="comunidad/veterinarias/:id" element={<FichaVeterinaria />} />
           <Route path="comunidad/solidario/nueva" element={<NuevaColecta />} />
           <Route path="comunidad/solidario/:id" element={<PaginaColecta />} />
+          <Route path="comunidad/extraviadas/nueva" element={<NuevoExtravio />} />
+          <Route path="comunidad/extraviadas/:id" element={<PaginaExtravio />} />
           <Route path="salud" element={<Salud />} />
           <Route path="avisos" element={<CentroAvisos />} />
           {pendientes.map((r) => (

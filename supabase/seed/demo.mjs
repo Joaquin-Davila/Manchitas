@@ -66,7 +66,7 @@ if (!aplicar) {
 }
 
 // 1) SQL con la contraseña sustituida, en un archivo temporal que se borra al terminar.
-const sql = ['demo.sql', 'demo-b.sql'].map((f) => readFileSync(join(aqui, f), 'utf8')).join('\n').replaceAll('__DEMO_PASSWORD__', env.VITE_DEMO_PASSWORD.replaceAll("'", "''"))
+const sql = ['demo.sql', 'demo-b.sql', 'demo-c.sql'].map((f) => readFileSync(join(aqui, f), 'utf8')).join('\n').replaceAll('__DEMO_PASSWORD__', env.VITE_DEMO_PASSWORD.replaceAll("'", "''"))
 const temporal = join(tmpdir(), `manchitas-demo-${process.pid}.sql`)
 writeFileSync(temporal, sql)
 try {

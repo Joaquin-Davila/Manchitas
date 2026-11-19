@@ -2,6 +2,7 @@ import type { Sesion } from '../features/auth/contextoSesion'
 import type { Cartilla } from '../types/cartilla'
 import type { Mascota } from '../types/mascota'
 import type { Campana } from './campanasEjemplo'
+import type { Notificacion } from './notificaciones'
 import { formatearFecha } from './fechas'
 
 // Centro de avisos calculado: no hay una tabla de notificaciones. Cada aviso se deriva de datos que
@@ -51,9 +52,11 @@ type Datos = {
   mascotas: Mascota[]
   cartillas: Record<string, Cartilla | undefined>
   campanas: Campana[]
+  /** Notificaciones del servidor (avistamientos, foros...). Opcional: sin Supabase no hay. */
+  notificaciones?: Notificacion[]
 }
 
-export function generarAvisos({ hoy, sesion, mascotas, cartillas, campanas }: Datos): Aviso[] {
+export function generarAvisos({ hoy, sesion, mascotas, cartillas, campanas, notificaciones = [] }: Datos): Aviso[] {
   const avisos: Aviso[] = []
   const anio = hoy.slice(0, 4)
   const fecha = (iso: string) => formatearFecha(iso, iso.slice(0, 4) !== anio)
@@ -160,6 +163,21 @@ export function generarAvisos({ hoy, sesion, mascotas, cartillas, campanas }: Da
       descripcion:
         'Quien escanee el QR de tus mascotas no podrá avisarte. Poder agregarlo desde la app está pendiente de integración.',
       fecha: mascotas.map((m) => m.creadaEn.slice(0, 10)).sort()[0],
+    })
+  }
+
+  // Notificaciones del servidor: su id es el de la fila, así que lo leído y lo eliminado se recuerda
+  // igual que el resto. Los avisos previos y los foros son importantes.
+  for (const n of notificaciones) {
+    avisos.push({
+      id: `notificacion-${n.id}`,
+      categoria: n.tipo.startsWith('extravio') || n.tipo === 'foro_abierto' || n.tipo === 'avistamiento' || n.tipo === 'comentario_foro' ? 'comunidad' : 'cuenta',
+      importante: n.tipo === 'extravio_aviso_previo' || n.tipo === 'avistamiento',
+      titulo: n.titulo,
+      descripcion: n.texto,
+      fecha: n.creadaEn.slice(0, 10),
+      ruta: n.enlace,
+      accion: n.enlace ? 'Ver' : undefined,
     })
   }
 

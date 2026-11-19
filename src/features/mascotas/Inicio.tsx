@@ -6,6 +6,7 @@ import { useCartilla } from '../salud/useCartilla'
 import ActividadComunitaria from './inicio/ActividadComunitaria'
 import CadaHuella from './inicio/CadaHuella'
 import ComunidadCerca from './inicio/ComunidadCerca'
+import ExtraviadasInicio from './inicio/ExtraviadasInicio'
 import Descubre from './inicio/Descubre'
 import { HeroCargando, HeroMascota, HeroSinMascota } from './inicio/HeroMascota'
 import Indicadores from './inicio/Indicadores'
@@ -83,6 +84,10 @@ export default function Inicio() {
           <Patrocinado anuncios={datos.anuncios} hoy={hoy} />
         </Aparecer>
       )}
+
+      <Aparecer retraso={290}>
+        <ExtraviadasInicio />
+      </Aparecer>
 
       <Aparecer retraso={320}>
         <ComunidadCerca hoy={hoy} campanas={datos?.campanas ?? []} />

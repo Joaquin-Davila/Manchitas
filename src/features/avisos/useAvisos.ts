@@ -4,6 +4,8 @@ import type { Aviso } from '../../lib/avisos'
 import { campanasProximas } from '../../lib/campanasEjemplo'
 import { obtenerCartilla } from '../../lib/cartillas'
 import { hoyISO } from '../../lib/edad'
+import { listarNotificaciones } from '../../lib/notificaciones'
+import { useCarga } from '../../lib/useCarga'
 import type { Cartilla } from '../../types/cartilla'
 import { useSesion } from '../auth/contextoSesion'
 import { useMascotas } from '../mascotas/useMascotas'
@@ -44,6 +46,8 @@ export function useAvisos() {
   const [marcas, setMarcas] = useState<{ correo: string; valor: Marcas } | null>(null)
 
   const ids = mascotas.map((m) => m.id).join(',')
+  // Las notificaciones del servidor se suman cuando llegan; si no cargan, el resto de los avisos sigue igual.
+  const notificaciones = useCarga(`notificaciones-${correo}`, () => listarNotificaciones().catch(() => []))
 
   useEffect(() => {
     if (cargandoMascotas || errorMascotas) return
@@ -80,10 +84,10 @@ export function useAvisos() {
     if (!listos) return []
     const eliminados = new Set(marcasActuales.eliminados)
     const leidos = new Set(marcasActuales.leidos)
-    return generarAvisos({ hoy, sesion, mascotas, cartillas: cartillas.datos, campanas: campanasProximas(hoy) })
+    return generarAvisos({ hoy, sesion, mascotas, cartillas: cartillas.datos, campanas: campanasProximas(hoy), notificaciones: notificaciones.datos ?? [] })
       .filter((a) => !eliminados.has(a.id))
       .map((a) => ({ ...a, leido: leidos.has(a.id) }))
-  }, [listos, cartillas, marcasActuales, hoy, sesion, mascotas])
+  }, [listos, cartillas, marcasActuales, hoy, sesion, mascotas, notificaciones.datos])
 
   return {
     avisos,
